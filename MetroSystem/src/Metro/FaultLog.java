@@ -20,6 +20,7 @@ public class FaultLog {
         System.out.println("Fault ID: " + faultId);
         System.out.println("Gate ID: " + gateId);
         System.out.println("Description: " + description);
+        System.out.println("Report Time: " + reportTime);
     }
 
     public void updateStatus() {
