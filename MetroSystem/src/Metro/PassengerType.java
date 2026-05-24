@@ -8,14 +8,10 @@ public enum PassengerType {
     DISABLE(0.0);
 
     private double rate;
-
     PassengerType(double rate) {
-
         this.rate = rate;
     }
-
     public double getRate() {
-
         return rate;
     }
 }
