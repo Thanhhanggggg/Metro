@@ -50,7 +50,7 @@ public class TicketManager {
             return false;
         }
         t.getState().handle(t); // ActiveState -> UsedState
-        station.incrementCheckin();
+        station.incrementCheckIn();
         HeatmapService.getInstance().analyzeRealtime(station);
         System.out.println("[TicketManager] Check-in OK: " + ticketId);
         return true;
