@@ -9,7 +9,7 @@ public abstract class Ticket {
     protected TicketStatus status;
     protected double price;
     protected Passenger passenger;
-    protected LocalDateTime purchaseAt;
+    protected LocalDateTime purchasedAt;
     protected TicketState state;
 
     public Ticket(
@@ -26,7 +26,7 @@ public abstract class Ticket {
 
         this.status = TicketStatus.ACTIVE;
 
-        this.purchaseAt = LocalDateTime.now();
+        this.purchasedAt = LocalDateTime.now();
 
         // State mặc định
         this.state = new ActiveState();
@@ -56,8 +56,8 @@ public abstract class Ticket {
         return passenger;
     }
 
-    public LocalDateTime getPurchaseAt() {
-        return purchaseAt;
+    public LocalDateTime getPurchasedAt() {
+        return purchasedAt;
     }
 
     public TicketState getState() {
