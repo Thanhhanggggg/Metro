@@ -13,7 +13,6 @@ public class MonthlyPass extends Ticket {
 
     public MonthlyPass(
             String ticketId,
-            double price,
             Passenger passenger,
             List<MetroLine> validLines
     ) {
@@ -21,7 +20,7 @@ public class MonthlyPass extends Ticket {
         super(
                 ticketId,
                 TicketType.MONTHLY,
-                price,
+                0,
                 passenger
         );
 
@@ -35,6 +34,9 @@ public class MonthlyPass extends Ticket {
         this.rideCount = 0;
 
         this.maxRides = 60;
+
+        this.price =
+                calcPrice(TicketType.MONTHLY);
     }
 
     @Override
@@ -51,7 +53,8 @@ public class MonthlyPass extends Ticket {
             TicketType type
     ) {
 
-        return FareConfig.MONTHLY_PASS_PRICE;
+        return FareConfig.getInstance()
+                .getFixedPriceMonthly();
     }
 
     public double getRemainingRides() {
