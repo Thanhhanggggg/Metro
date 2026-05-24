@@ -3,20 +3,15 @@ package Metro;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationStaff {
-	private String staffId;
-    private String name;
+public class StationStaff extends Employee {
     private Station station;
     private boolean onDuty;
     private List<HeatmapAlert> observerState;
-    public StationStaff(String staffId,String name,Station station) {
-        this.staffId = staffId;
-        this.name = name;
-        this.station = station;
-        this.onDuty = true;
-        this.observerState = new ArrayList<>();
-    }
-	
+	public StationStaff(String employeeId, String name, String password, String staffId) {
+		super(employeeId, name, password);
+		this.onDuty = true;
+		this.observerState = new ArrayList<>();;
+	}
 	@Override
 	public void update(HeatmapAlert alert) {
 		// TODO Auto-generated method stub
