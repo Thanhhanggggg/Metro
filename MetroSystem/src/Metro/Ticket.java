@@ -2,213 +2,72 @@ package Metro;
 
 import java.time.LocalDateTime;
 
-public class Ticket {
+public abstract class Ticket {
 
-    // Mã vé
-    private String ticketId;
+    protected String ticketId;
+    protected TicketType type;
+    protected TicketStatus status;
+    protected double price;
+    protected Passenger passenger;
+    protected LocalDateTime purchaseDate;
+    protected TicketState state;
 
-    // Trạng thái vé (State Pattern)
-    private TicketState state;
-
-    // Thời gian tạo vé
-    private LocalDateTime createdTime;
-
-    // Thời gian hết hạn
-    private LocalDateTime expiredTime;
-
-    // Giá vé
-    private double price;
-
-    // Loại hành khách
-    private PassengerType passengerType;
-
-    // Ga bắt đầu
-    private Station fromStation;
-
-    // Ga đích
-    private Station destinationStation;
-
-    // QR Code vé
-    private String qrCode;
-
-    // Constructor
     public Ticket(
             String ticketId,
+            TicketType type,
             double price,
-            PassengerType passengerType,
-            Station fromStation,
-            Station destinationStation
+            Passenger passenger
     ) {
 
         this.ticketId = ticketId;
-
+        this.type = type;
         this.price = price;
+        this.passenger = passenger;
 
-        this.passengerType = passengerType;
+        this.status = TicketStatus.ACTIVE;
 
-        this.fromStation = fromStation;
+        this.purchaseDate = LocalDateTime.now();
 
-        this.destinationStation =
-                destinationStation;
-
-        // mặc định vé mới là Active
+        // State mặc định
         this.state = new ActiveState();
-
-        // thời gian tạo
-        this.createdTime =
-                LocalDateTime.now();
-
-        // ví dụ: vé hết hạn sau 1 ngày
-        this.expiredTime =
-                createdTime.plusDays(1);
-
-        // tạo QR giả lập
-        this.qrCode =
-                "QR-" + ticketId;
     }
 
-    // Check-in
-    public void checkIn() {
-
-        if(state.isValid()) {
-
-            state.handle(this);
-
-        } else {
-
-            System.out.println(
-                    "Ticket invalid for check-in!"
-            );
-        }
-    }
-
-    // Check-out
-    public void checkOut() {
-
-        if(state instanceof UsedState) {
-
-            state.handle(this);
-
-        } else {
-
-            System.out.println(
-                    "Ticket invalid for check-out!"
-            );
-        }
-    }
-
-    // Hoàn vé
-    public void refund() {
-
-        if(state.canRefund()) {
-
-            setState(
-                    new RefundedState()
-            );
-
-            System.out.println(
-                    "Refund successful!"
-            );
-
-        } else {
-
-            System.out.println(
-                    "Ticket cannot be refunded!"
-            );
-        }
-    }
-
-    // Kiểm tra hết hạn
-    public boolean checkExpiry() {
-
-        return LocalDateTime.now()
-                .isBefore(expiredTime);
-    }
-
-    // Hiển thị thông tin vé
-    public void displayTicketInfo() {
-
-        System.out.println(
-                "===== TICKET INFO ====="
-        );
-
-        System.out.println(
-                "Ticket ID: " + ticketId
-        );
-
-        System.out.println(
-                "Passenger Type: "
-                + passengerType
-        );
-
-        System.out.println(
-                "Price: " + price
-        );
-
-        System.out.println(
-                "From: "
-                + fromStation
-        );
-
-        System.out.println("Destination: "
-                + destinationStation
-        );
-
-        System.out.println(
-                "State: "
-                + state.getClass()
-                        .getSimpleName()
-        );
-
-        System.out.println(
-                "Created Time: "
-                + createdTime
-        );
-
-        System.out.println(
-                "Expired Time: "
-                + expiredTime
-        );
-    }
-
+    // =========================
     // Getter
+    // =========================
+
     public String getTicketId() {
         return ticketId;
     }
 
-    public TicketState getState() {
-        return state;
+    public TicketType getType() {
+        return type;
     }
 
-    public LocalDateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public LocalDateTime getExpiredTime() {
-        return expiredTime;
+    public TicketStatus getStatus() {
+        return status;
     }
 
     public double getPrice() {
         return price;
     }
 
-    public PassengerType getPassengerType() {
-        return passengerType;
+    public Passenger getPassenger() {
+        return passenger;
     }
 
-    public Station getFromStation() {
-        return fromStation;
+    public LocalDateTime getPurchaseDate() {
+        return purchaseDate;
     }
 
-    public Station getDestinationStation() {
-        return destinationStation;
+    public TicketState getState() {
+        return state;
     }
 
-    public String getQrCode() {
-        return qrCode;
-    }
-
+    // =========================
     // Setter
+    // =========================
+
     public void setState(
             TicketState state
     ) {
@@ -216,10 +75,34 @@ public class Ticket {
         this.state = state;
     }
 
-    public void setExpiredTime(
-            LocalDateTime expiredTime
-    ) {
+    // =========================
+    // Methods
+    // =========================
 
-        this.expiredTime = expiredTime;
+    public boolean isValid() {
+
+        return state.isValid();
+    }
+
+    public abstract double calcPrice(
+            TicketType type
+    );
+
+    public String generateQR() {
+
+        return "QR-" + ticketId;
+    }
+
+    public void read() {
+
+        System.out.println(
+                "Reading ticket: "
+                + ticketId
+        );
+    }
+
+    public boolean canRefund() {
+
+        return state.canRefund();
     }
 }
