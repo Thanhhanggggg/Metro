@@ -38,6 +38,10 @@ public class FareConfig {
 		return configId;
 	}
 
+	public double getBaseFare() {
+		return baseFare;
+	}
+
 	public void setConfigId(String configId) {
 		this.configId = configId;
 	}
