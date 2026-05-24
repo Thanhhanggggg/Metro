@@ -10,55 +10,27 @@ public class SingleTrip extends Ticket {
     private int stops;
     private LocalDateTime expiredAt;
 
-    public SingleTrip(
-            String ticketId,
-            Passenger passenger,
-            Station origin,
-            Station destination,
-            MetroLine line,
-            int stops
-    ) {
-
-        super(
-                ticketId,
-                TicketType.SINGLE,
-                0,
-                passenger
-        );
-
-        this.origin = origin;
-        this.destination = destination;
-        this.line = line;
+    public SingleTrip(String ticketId,Passenger passenger, int stops) {
+//            Station origin,
+//            Station destination,
+//            MetroLine line,
+        super(ticketId, TicketType.SINGLE, 0, passenger);
+//        this.origin = origin;
+//        this.destination = destination;
+//        this.line = line;
         this.stops = stops;
-
         this.price = calcPrice(TicketType.SINGLE);
-
-        this.expiredAt =
-                LocalDateTime.now().plusHours(2);
+        this.expiredAt = LocalDateTime.now().plusHours(2);
     }
-
     @Override
     public boolean isValid() {
-
-        return !isExpired()
-                && getState().isValid();
+        return !isExpired() && getState().isValid();
     }
-
     @Override
-    public double calcPrice(
-            TicketType type
-    ) {
-
-        return FareConfig.getInstance()
-                .calculateFare(
-                        stops,
-                        passenger.getPassengerType()
-                );
+    public double calcPrice(TicketType type) {
+        return FareConfig.getInstance().calculateFare(stops, passenger.getPassengerType());
     }
-
     public boolean isExpired() {
-
-        return LocalDateTime.now()
-                .isAfter(expiredAt);
+        return LocalDateTime.now().isAfter(expiredAt);
     }
 }
