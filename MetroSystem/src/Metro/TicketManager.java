@@ -3,36 +3,38 @@ package Metro;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TicketManager {
-	    private static TicketManager instance;
-	    private Map<String, Ticket> tickets;
-	    private RefundPolicy refundPolicy;  
-        private TicketFactory factory;       
-	    private TicketManager() {
-	        tickets = new HashMap<>();
-			refundPolicy = new FullRefundPolicy(); 
-            factory = new TicketFactory();    
-	    }
 
-	    public static TicketManager getInstance() {
-	        if (instance == null) {
-	            instance = new TicketManager();
-	        }
-	        return instance;
-	    }
+    private static TicketManager instance;
+    private Map<String, Ticket> tickets;
+    private RefundPolicy refundPolicy;  // them
+    private TicketFactory factory;       // them
 
-	    public Ticket findById(String ticketId) {
-	        return tickets.get(ticketId);
-	    }
+    private TicketManager() {
+        tickets      = new HashMap<>();
+        refundPolicy = new FullRefundPolicy(); 
+        factory      = new TicketFactory();    
+    }
 
-	    public void saveTicket(Ticket ticket) {
-	        tickets.put(ticket.getTicketId(), ticket);
-	        System.out.println("Saved: " + ticket.getTicketId());
-	    }
-	 public Ticket issueTicket(Passenger passenger, TicketType type, int stops,
+    public static TicketManager getInstance() {
+        if (instance == null) {
+            instance = new TicketManager();
+        }
+        return instance;
+    }
+
+    public Ticket findById(String ticketId) {
+        return tickets.get(ticketId);
+    }
+
+    public void saveTicket(Ticket ticket) {
+        tickets.put(ticket.getTicketId(), ticket);
+        System.out.println("Saved: " + ticket.getTicketId());
+    }
+
+    
+    public Ticket issueTicket(Passenger passenger, TicketType type, int stops,
                               Station origin, Station destination, MetroLine line) {
         Ticket t = factory.factoryMethod(passenger, type, stops, origin, destination, line);
         tickets.put(t.getTicketId(), t);
@@ -41,6 +43,7 @@ public class TicketManager {
                          + " | QR=" + t.generateQR());
         return t;
     }
+
 
     public boolean checkIn(String ticketId, Station station) {
         Ticket t = findById(ticketId);
@@ -62,4 +65,6 @@ public class TicketManager {
     public boolean canRefund(Ticket ticket) {
         return refundPolicy.canRefund(ticket);
     }
+
+   
 }
