@@ -1,4 +1,4 @@
-package metro;
+package Metro;
 // Strategy Pattern 
 public interface RefundPolicy {
     boolean canRefund(Ticket ticket);

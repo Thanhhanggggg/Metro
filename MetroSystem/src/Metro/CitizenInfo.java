@@ -1,4 +1,4 @@
-package metro;
+package Metro;
 
 import java.time.LocalDate;
 import java.time.Period;

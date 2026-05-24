@@ -1,4 +1,4 @@
-package metro;
+package Metro;
 
 public enum AlertLevel {
 	NORMAL, ATTENTION, WARNING, CRITICAL;

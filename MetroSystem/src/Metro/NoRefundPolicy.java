@@ -1,4 +1,4 @@
-package metro;
+package Metro;
 
 // Strategy Pattern
 public class NoRefundPolicy implements RefundPolicy {
