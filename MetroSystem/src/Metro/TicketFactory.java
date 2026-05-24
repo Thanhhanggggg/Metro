@@ -1,6 +1,12 @@
 package Metro;
 
 public class TicketFactory {
+	  // Factory Method
+    public abstract Ticket createTicket(
+            String ticketId,
+            double price,
+            Passenger passenger
+    );
 	    public static Ticket createTicket(TicketType type, String ticketId, double price, Passenger passenger) {
 	        switch (type) {
 	        
