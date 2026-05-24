@@ -22,7 +22,7 @@ public abstract class Employee {
     
     public boolean login(String inputPassword) {
         if(password.equals(inputPassword)) {
-            System.out.println(name + " login successful!");
+            System.out.println(name + " login successful! ");
             return true;
         }
         System.out.println("Login failed!");
@@ -30,7 +30,7 @@ public abstract class Employee {
     }
     
     public void logout() {
-        System.out.println(name + " logged out!");
+        System.out.println(name + " logged out! ");
     }
 
 }
