@@ -1,70 +1,157 @@
 package Metro;
 
-import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
-public class TicketManager {
+public abstract class Ticket {
 
-    private static TicketManager instance;
-    private Map<String, Ticket> tickets;
-    private RefundPolicy refundPolicy;  // them
-    private TicketFactory factory;       // them
+    protected String ticketId;
+    protected TicketType type;
+    protected TicketStatus status;
+    protected double price;
+    protected Passenger passenger;
+    protected LocalDateTime purchaseAt;
+    protected TicketState state;
 
-    private TicketManager() {
-        tickets      = new HashMap<>();
-        refundPolicy = new FullRefundPolicy(); 
-        factory      = new TicketFactory();    
+    public Ticket(
+            String ticketId,
+            TicketType type,
+            double price,
+            Passenger passenger
+    ) {
+
+        this.ticketId = ticketId;
+        this.type = type;
+        this.price = price;
+        this.passenger = passenger;
+
+        this.status = TicketStatus.ACTIVE;
+
+        this.purchaseAt = LocalDateTime.now();
+
+        // State mặc định
+        this.state = new ActiveState();
     }
 
-    public static TicketManager getInstance() {
-        if (instance == null) {
-            instance = new TicketManager();
+    // =========================
+    // Getter
+    // =========================
+
+    public String getTicketId() {
+        return ticketId;
+    }
+
+    public TicketType getType() {
+        return type;
+    }
+
+    public TicketStatus getStatus() {
+        return status;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Passenger getPassenger() {
+        return passenger;
+    }
+
+    public LocalDateTime getPurchaseAt() {
+        return purchaseAt;
+    }
+
+    public TicketState getState() {
+        return state;
+    }
+
+    // =========================
+    // Setter
+    // =========================
+
+    public void setState(
+            TicketState state
+    ) {
+
+        this.state = state;
+    }
+
+    // =========================
+    // Methods
+    // =========================
+
+    public boolean isValid() {
+
+        return state.isValid();
+    }
+
+    public abstract double calcPrice(
+            TicketType type
+    );
+
+    public String generateQR() {
+
+        return "QR-" + ticketId;
+    }
+
+    public void read() {
+
+        System.out.println(
+                "Reading ticket: "
+                + ticketId
+        );
+    }
+
+    public boolean canRefund() {
+
+        return state.canRefund();
+    }
+    // check-in
+    public void checkIn() {
+
+        if(state.isValid()) {
+
+            state.handle(this);
+
+        } else {
+
+            System.out.println(
+                    "Ticket invalid for check-in!"
+            );
         }
-        return instance;
     }
 
-    public Ticket findById(String ticketId) {
-        return tickets.get(ticketId);
-    }
+    // check-out
+    public void checkOut() {
 
-    public void saveTicket(Ticket ticket) {
-        tickets.put(ticket.getTicketId(), ticket);
-        System.out.println("Saved: " + ticket.getTicketId());
-    }
+        if(state instanceof UsedState) {
 
-    
-    public Ticket issueTicket(Passenger passenger, TicketType type, int stops,
-                              Station origin, Station destination, MetroLine line) {
-        Ticket t = factory.factoryMethod(passenger, type, stops, origin, destination, line);
-        tickets.put(t.getTicketId(), t);
-        System.out.println("Issued: " + t.getTicketId()
-                         + " | gia=" + t.getPrice()
-                         + " | QR=" + t.generateQR());
-        return t;
-    }
+            state.handle(this);
 
+        } else {
 
-    public boolean checkIn(String ticketId, Station station) {
-        Ticket t = findById(ticketId);
-        if (!(t.getState() instanceof ActiveState)) {
-            System.out.println("Check-in REJECTED: "
-                             + t.getState().getStateName());
-            return false;
+            System.out.println(
+                    "Ticket invalid for check-out!"
+            );
         }
-        t.getState().handle(t); // ActiveState -> UsedState
-        station.incrementCheckIn();
-        HeatmapService.getInstance().analyzeRealtime(station);
-        System.out.println("[TicketManager] Check-in OK: " + ticketId);
-        return true;
     }
-    public void setRefundPolicy(RefundPolicy policy) {
-        this.refundPolicy = policy;
-    }
+    // refund
+    public void refund() {
 
-    public boolean canRefund(Ticket ticket) {
-        return refundPolicy.canRefund(ticket);
-    }
+        if(state.canRefund()) {
 
-   
+            setState(
+                    new RefundedState()
+            );
+
+            System.out.println(
+                    "Refund successful!"
+            );
+
+        } else {
+
+            System.out.println(
+                    "Ticket cannot be refunded!"
+            );
+        }
+    }
 }
