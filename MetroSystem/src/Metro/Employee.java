@@ -32,5 +32,5 @@ public abstract class Employee {
     public void logout() {
         System.out.println(name + " logged out! ");
     }
-.
+
 }
