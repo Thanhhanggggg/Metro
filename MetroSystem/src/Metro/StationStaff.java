@@ -10,7 +10,7 @@ public class StationStaff extends Employee {
 	public StationStaff(String employeeId, String name, String password, String staffId) {
 		super(employeeId, name, password);
 		this.onDuty = true;
-		this.observerState = new ArrayList<>();;
+		this.observerState = new ArrayList<>();
 	}
 	@Override
 	public void update(HeatmapAlert alert) {
