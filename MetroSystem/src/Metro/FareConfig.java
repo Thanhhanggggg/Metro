@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FareConfig {
-	private String configId;
+	private String configId;// ma cau hinh
 	private double baseFare;
 	private double farePerStop;
 	private double maxFare;//gia toi da so voi ve tram
 	private double fixedPriceDaily;
 	private double fixedPriceMonthly;
-	private Map<PassengerType, Double> discountRate = new EnumMap<>(PassengerType.class);
+	private Map<PassengerType, Double> discountRate ;
 	private LocalDate effectiveDate;
 	private static FareConfig uniqueInstance  ;
 	
@@ -25,12 +25,13 @@ public class FareConfig {
 		this.fixedPriceDaily = 40000;
 		this.fixedPriceMonthly = 300000;
 		this.discountRate = new HashMap<>();// bang chiet khau 
+		
 		discountRate.put(PassengerType.NORMAL,   1.0);  // Người thuong: 100% gia
 	    discountRate.put(PassengerType.STUDENT,  0.7);  // Sinh vien:    70% gia
 	    discountRate.put(PassengerType.SENIOR,   0.5);  // Nguoi cao tuoi: 50% gia
 	    discountRate.put(PassengerType.DISABLE, 0.0);
 	    
-		this.effectiveDate = LocalDate.now();
+		this.effectiveDate = LocalDate.now();// co hieu luc tu ngay hom nay theo lich hien hanh
 	}
 
 	public String getConfigId() {
@@ -61,10 +62,7 @@ public class FareConfig {
 		return fixedPriceDaily;
 	}
 
-	public void setFixedPriceDaily(double fixedPriceDaily) {
-		this.fixedPriceDaily = fixedPriceDaily;
-	}
-
+	
 	public double getFixedPriceMonthly() {
 		return fixedPriceMonthly;
 	}
@@ -95,10 +93,6 @@ public class FareConfig {
 
 	public static void setUniqueInstance(FareConfig uniqueInstance) {
 		FareConfig.uniqueInstance = uniqueInstance;
-	}
-
-	public void setBaseFare(double baseFare) {
-		this.baseFare = baseFare;
 	}
 
 	//Methods
@@ -171,7 +165,27 @@ public class FareConfig {
         this.discountRate.putAll(ratesMap);
         System.out.println("Bang chiet khau da duoc cap nhat toan bo");
     }
-
 	
+	//Cap nhat ve ngay 
+	public void setFixedPriceDaily(double fixedPriceDaily) {
+		if(fixedPriceDaily > 0) {
+		this.fixedPriceDaily = fixedPriceDaily;
+		System.out.println("Gia ve ngay cap nhat: "+fixedPriceDaily +" VND");
+		}else {
+			System.out.println("Gia ve ngay phai >0");
+		}
+	}
+	
+	//Cap nhat gia ve co ban 
+	public void setBaseFare(double baseFare) {
+        if (baseFare > 0) {
+            this.baseFare = baseFare;
+            System.out.printf("Gia ve co ban cap nhat "+ baseFare +" VND");
+        } else {
+            System.out.println("Gia co ban phai > 0.");
+        }
+    }
+	
+
 	
 }
