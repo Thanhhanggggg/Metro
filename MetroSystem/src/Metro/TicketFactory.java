@@ -5,65 +5,26 @@ import java.util.List;
 import java.util.UUID;
 
 public class TicketFactory {
-
-    public Ticket factoryMethod(
-            Passenger pass,
-            TicketType type,
-            int stops,
-            Station origin,
-            Station destination,
-            MetroLine line
-    ) {
-
-        String ticketId =
-                generateTicketId();
-
+ public static Ticket factoryMethod(Passenger pass, TicketType type, int stops ) {
+        String ticketId = generateTicketId();
         switch (type) {
-
             case SINGLE:
-
-                return new SingleTrip(
-                        ticketId,
-                        pass,
-                        origin,
-                        destination,
-                        line,
-                        stops
-                );
-
+                return new SingleTrip(ticketId, pass, stops);
             case DAILY:
-
-                return new DayPass(
-                        ticketId,
-                        pass
-                );
-
+                return new DayPass(ticketId, pass);
             case MONTHLY:
-
-                List<MetroLine> lines =
-                        new ArrayList<>();
-
-                lines.add(line);
-
-                return new MonthlyPass(
-                        ticketId,
-                        pass,
-                        lines
+//                List<MetroLine> lines =
+//                        new ArrayList<>();
+//
+//                lines.add(line);
+                return new MonthlyPass(ticketId, pass
+//                        lines
                 );
-
             default:
-
-                throw new IllegalArgumentException(
-                        "Invalid ticket type"
-                );
+                throw new IllegalArgumentException("Invalid ticket type");
         }
     }
-
-    private String generateTicketId() {
-
-        return "TICKET-"
-                + UUID.randomUUID()
-                        .toString()
-                        .substring(0, 8);
+    private static String generateTicketId() {
+        return "TICKET-" + UUID.randomUUID().toString().substring(0, 8);
     }
 }
