@@ -3,15 +3,52 @@ package Metro;
 import java.time.LocalDate;
 
 public class DayPass extends Ticket {
-	    private LocalDate validDate;
-	    public DayPass(String ticketId, double price, Passenger passenger) {
-	        super(ticketId, TicketType.DAILY, price, passenger);
-	        this.validDate = LocalDate.now();
-	    }
 
-	    @Override
-	    public boolean isValid() {
-	        return super.isValid()
-	                && LocalDate.now().equals(validDate);
-	    }
-	}
+    private LocalDate validDate;
+    private int ridesUsed;
+    private boolean unlimitedRides;
+
+    public DayPass(
+            String ticketId,
+            Passenger passenger
+    ) {
+
+        super(
+                ticketId,
+                TicketType.DAILY,
+                0,
+                passenger
+        );
+
+        this.validDate = LocalDate.now();
+
+        this.ridesUsed = 0;
+
+        this.unlimitedRides = true;
+
+        this.price =
+                calcPrice(TicketType.DAILY);
+    }
+
+    @Override
+    public boolean isValid() {
+
+        return LocalDate.now()
+                .equals(validDate)
+                && getState().isValid();
+    }
+
+    @Override
+    public double calcPrice(
+            TicketType type
+    ) {
+
+        return FareConfig.getInstance()
+                .getFixedPriceDaily();
+    }
+
+    public void incrementRide() {
+
+        ridesUsed++;
+    }
+}
