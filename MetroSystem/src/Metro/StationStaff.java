@@ -16,6 +16,14 @@ public class StationStaff {
         this.onDuty = true;
         this.observerState = new ArrayList<>();
     }
+	@Override
+	public void update(HeatmapAlert alert) {
+		// TODO Auto-generated method stub
+		if (onDuty && alert != null) {
+            receiveAlert(alert);
+        }
+		
+	}
  // Kiểm tra vé thủ công
     public void checkStationTicket(Ticket ticket) {
         if(ticket == null) {
