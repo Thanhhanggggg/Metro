@@ -1,70 +1,85 @@
 package Metro;
 
-import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TicketManager {
-
-    private static TicketManager instance;
+    // Singleton instance
+    private static TicketManager uniqueInstance;
+    // Attributes
     private Map<String, Ticket> tickets;
-    private RefundPolicy refundPolicy;  // them
-    private TicketFactory factory;       // them
-
+    private RefundPolicy refundPolicy;
+    // Private constructor
     private TicketManager() {
-        tickets      = new HashMap<>();
-        refundPolicy = new FullRefundPolicy(); 
-        factory      = new TicketFactory();    
+        tickets = new HashMap<>();
     }
-
+    // Singleton method
     public static TicketManager getInstance() {
-        if (instance == null) {
-            instance = new TicketManager();
+        if (uniqueInstance == null) {
+            uniqueInstance = new TicketManager();
         }
-        return instance;
+        return uniqueInstance;
     }
-
-    public Ticket findById(String ticketId) {
-        return tickets.get(ticketId);
-    }
-
-    public void saveTicket(Ticket ticket) {
-        tickets.put(ticket.getTicketId(), ticket);
-        System.out.println("Saved: " + ticket.getTicketId());
-    }
-
-    
-    public Ticket issueTicket(Passenger passenger, TicketType type, int stops,
-                              Station origin, Station destination, MetroLine line) {
-        Ticket t = factory.factoryMethod(passenger, type, stops, origin, destination, line);
-        tickets.put(t.getTicketId(), t);
-        System.out.println("Issued: " + t.getTicketId()
-                         + " | gia=" + t.getPrice()
-                         + " | QR=" + t.generateQR());
-        return t;
-    }
-
-
-    public boolean checkIn(String ticketId, Station station) {
-        Ticket t = findById(ticketId);
-        if (!(t.getState() instanceof ActiveState)) {
-            System.out.println("Check-in REJECTED: "
-                             + t.getState().getStateName());
-            return false;
-        }
-        t.getState().handle(t); // ActiveState -> UsedState
-        station.incrementCheckIn();
-        HeatmapService.getInstance().analyzeRealtime(station);
-        System.out.println("[TicketManager] Check-in OK: " + ticketId);
-        return true;
-    }
+    // Set refund policy
     public void setRefundPolicy(RefundPolicy policy) {
         this.refundPolicy = policy;
     }
+    // Issue ticket
+    public Ticket issueTicket(Passenger pass, TicketType type, int stops) {
+        Ticket ticket = null;
+        switch (type) {
+            case SINGLE:
+                ticket = new SingleTrip("T" + (tickets.size() + 1), pass, stops);
+                break;
+            case DAILY:
+                ticket = new DayPass("T" + (tickets.size() + 1), pass);
+                break;
 
-    public boolean canRefund(Ticket ticket) {
-        return refundPolicy.canRefund(ticket);
+            case MONTHLY:
+                ticket = new MonthlyPass("T" + (tickets.size() + 1), pass);
+                break;
+        }
+        if (ticket != null) {
+            tickets.put(ticket.getTicketId(), ticket);
+        }
+        return ticket;
     }
+    // Refund ticket
+    public boolean refundTicket(Ticket ticket) {
+        if (refundPolicy != null) {
+            return refundPolicy.canRefund(ticket);
+        }
+        return false;
+    }
+    // Find ticket by ID
+    public Ticket findById(String id) {
+        return tickets.get(id);
+    }
+    // Check refund condition
+    public boolean canRefund(Ticket ticket) {
+        return ticket != null && ticket.canRefund();
+    }
+    // Find affected tickets
+    public List<Ticket> findAffectedTickets(String dateId) {
+        List<Ticket> result = new ArrayList<>();
+        for (Ticket t : tickets.values()) {
+            result.add(t);
+        }
+        return result;
+    }
+    // Revenue report
+    public Map<TicketType, Integer> getRevenueReport(String dateRange) {
+        Map<TicketType, Integer> report = new HashMap<>();
+        for (Ticket t : tickets.values()) {
+            TicketType type = t.getType();
+            report.put(type, report.getOrDefault(type, 0) + 1);
+        }
+        return report;
+    }
+    // Confirm refund
+    public void confirmRefund(Ticket ticket) {
 
-   
+        if (ticket != null) {
+            System.out.println("Refund confirmed for ticket: "+ ticket.getTicketId());
+        }
+    }
 }
