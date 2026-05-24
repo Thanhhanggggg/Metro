@@ -90,10 +90,10 @@ public abstract class Ticket {
             System.out.println("Refund successful!");
         } else {
             System.out.println("Ticket cannot be refunded!");
+        }
+    }
 	public boolean isActive() {
 		// TODO Auto-generated method stub
 		return false;
 	}
-        }
-    }
 }
