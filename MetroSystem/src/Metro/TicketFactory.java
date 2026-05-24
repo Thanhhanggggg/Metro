@@ -1,34 +1,30 @@
 package Metro;
 
-public class TicketFactory {
-	  package Metro;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class TicketFactory {
+
     public Ticket factoryMethod(
-            Passenger passenger,
+            Passenger pass,
             TicketType type,
             int stops,
             Station origin,
             Station destination,
             MetroLine line
-    ) 
-    {
+    ) {
 
-        double price =
-                FareConfig.getInstance()
-                        .calculateFare(
-                                stops,
-                                passenger.getPassengerType()
-                        );
+        String ticketId =
+                generateTicketId();
 
         switch (type) {
 
             case SINGLE:
 
                 return new SingleTrip(
-                        generateTicketId(),
-                        price,
-                        passenger,
+                        ticketId,
+                        pass,
                         origin,
                         destination,
                         line,
@@ -38,37 +34,36 @@ public class TicketFactory {
             case DAILY:
 
                 return new DayPass(
-                        generateTicketId(),
-                        FareConfig.DAY_PASS_PRICE,
-                        passenger,
-                        origin,
-                        destination,
-                        line
+                        ticketId,
+                        pass
                 );
 
             case MONTHLY:
 
+                List<MetroLine> lines =
+                        new ArrayList<>();
+
+                lines.add(line);
+
                 return new MonthlyPass(
-                        generateTicketId(),
-                        FareConfig.MONTHLY_PASS_PRICE,
-                        passenger,
-                        origin,
-                        destination,
-                        line
+                        ticketId,
+                        pass,
+                        lines
                 );
 
             default:
 
                 throw new IllegalArgumentException(
-                        "Invalid Ticket Type"
+                        "Invalid ticket type"
                 );
         }
     }
 
     private String generateTicketId() {
 
-        return "TK-" + System.currentTimeMillis();
+        return "TICKET-"
+                + UUID.randomUUID()
+                        .toString()
+                        .substring(0, 8);
     }
-}
-	
 }
