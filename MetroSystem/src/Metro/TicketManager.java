@@ -47,7 +47,7 @@ public class TicketManager {
         return ticket != null && ticket.canRefund();
     }
     // Find affected tickets
-    public List<Ticket> findAffectedTickets(String dateId) {
+    public List<Ticket> findAffectedTickets(String gateId) {
         List<Ticket> result = new ArrayList<>();
         for (Ticket t : tickets.values()) {
             result.add(t);
