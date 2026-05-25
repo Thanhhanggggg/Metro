@@ -1,10 +1,9 @@
 package Metro;
 
+import java.util.List;
 import java.util.Map;
 
 public class Admin extends Employee{
-	
-	private static final FareConfig HeatmapService = null;
 
 	public Admin(String employeeId, String name, String password) {
 		super(employeeId, name, password);
@@ -134,7 +133,7 @@ public class Admin extends Employee{
         System.out.println("cap nhat thanh cong: " + metroLine);
     }
  
-	public String  requestRevenueReport(String dateRange) {
+	public Map<TicketType, Integer> requestRevenueReport(String dateRange) {
 		if (dateRange == null || dateRange.trim().isEmpty()) {
             System.out.println("Khoang thoi gian khong hop le.");
             return null ;
@@ -142,16 +141,16 @@ public class Admin extends Employee{
  
         System.out.println("Tong hop bao cao doanh thu " + dateRange);
         // Goi TicketManager Singleton de lay bao cao
-        String report = TicketManager.getInstance().getRevenueReport(dateRange);
+        Map<TicketType, Integer> report = TicketManager.getInstance().getRevenueReport(dateRange);
  
         System.out.println("Bao cao doanh thu: " + report);
         return report;
     }
 	
 	//Yeu cau xem bao cao mat do heatmap
-	public String requestHeatmapReport() {
+	public List<HeatmapAlert> requestHeatmapReport() {
         // Goi HeatmapService Singleton de lay du lieu
-        String report = HeatmapService.getInstance().getHeatmapReport();
+		List<HeatmapAlert> report = HeatmapService.getInstance().getHeatmapReport();
  
         System.out.println("Bao cao HeatMap:\n" + report);
         return report;
