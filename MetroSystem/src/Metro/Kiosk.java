@@ -108,7 +108,7 @@ public class Kiosk {
 			return;
 		}
 		System.out.println("\n========== DANH SACH TUYEN METRO ==========");
-		if (metroLineList == null || metroLineList == null ) {
+		if (metroLineList == null || metroLineList.isEmpty() ) {
 			System.out.println("Chua co tuyen nao trong danh sach");
 			return;
 		}
