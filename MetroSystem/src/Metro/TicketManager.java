@@ -25,19 +25,7 @@ public class TicketManager {
     }
     // Issue ticket
     public Ticket issueTicket(Passenger pass, TicketType type, int stops) {
-        Ticket ticket = null;
-        switch (type) {
-            case SINGLE:
-                ticket = new SingleTrip("T" + (tickets.size() + 1), pass, stops);
-                break;
-            case DAILY:
-                ticket = new DayPass("T" + (tickets.size() + 1), pass);
-                break;
-
-            case MONTHLY:
-                ticket = new MonthlyPass("T" + (tickets.size() + 1), pass);
-                break;
-        }
+        Ticket ticket = TicketFactory.factoryMethod(pass, type, stops);
         if (ticket != null) {
             tickets.put(ticket.getTicketId(), ticket);
         }
