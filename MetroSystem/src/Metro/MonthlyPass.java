@@ -26,7 +26,9 @@ public class MonthlyPass extends Ticket {
     public double calcPrice(TicketType type) {
         return FareConfig.getInstance().getFixedPriceMonthly();
     }
-    public double getRemainingRides() {
+    // vi trong diagram moi nhat de la double
+    // da sua thannh int
+    public int getRemainingRides() {
         return maxRides - rideCount;
     }
     public boolean coverLine(MetroLine line) {
