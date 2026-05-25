@@ -8,7 +8,7 @@ import java.util.Map;
 public class FareConfig {
 	private String configId;// ma cau hinh
 	private double baseFare;
-	private double farePerStop;
+	private double farePerStop;// gia moi tram
 	private double maxFare;//gia toi da so voi ve tram
 	private double fixedPriceDaily;
 	private double fixedPriceMonthly;
@@ -16,7 +16,7 @@ public class FareConfig {
 	private LocalDate effectiveDate;
 	private static FareConfig uniqueInstance  ;
 	
-	public FareConfig() {
+	public FareConfig(String configId) {
 		super();
 		this.configId = configId;
 		this.baseFare = 7000;// qua 1 ga 
@@ -33,7 +33,23 @@ public class FareConfig {
 	    
 		this.effectiveDate = LocalDate.now();// co hieu luc tu ngay hom nay theo lich hien hanh
 	}
-
+	public FareConfig() {
+		super();
+		this.configId = configId;
+		this.baseFare = 7000;// qua 1 ga 
+		this.farePerStop = 10000;// qua 3 ga tro len 
+		this.maxFare = 25000;
+		this.fixedPriceDaily = 40000;
+		this.fixedPriceMonthly = 300000;
+		this.discountRate = new HashMap<>();// bang chiet khau 
+		
+		discountRate.put(PassengerType.NORMAL,   1.0);  // Người thuong: 100% gia
+	    discountRate.put(PassengerType.STUDENT,  0.7);  // Sinh vien:    70% gia
+	    discountRate.put(PassengerType.SENIOR,   0.5);  // Nguoi cao tuoi: 50% gia
+	    discountRate.put(PassengerType.DISABLE, 0.0);
+	    
+		this.effectiveDate = LocalDate.now();// co hieu luc tu ngay hom nay theo lich hien hanh
+	}
 	public String getConfigId() {
 		return configId;
 	}
@@ -111,18 +127,27 @@ public class FareConfig {
             System.out.println("So tram khong hop le: " + stops);
             return 0;
         }
-		//Tinh gia chua chiet khau 
-		double rawFare = baseFare + stops * farePerStop;
-		//Lay he so chiet khau cua hanh khach 
-		//mac dinh 1.0 neu ko co key 
-		double rate = discountRate.getOrDefault(passengerType, 1.0);
-		//Ap dung chiet khau 
-		double discountedFare = rawFare * rate;
-		//Ap dung gia tran (khong vuot maxfare)
-		double finalFare  = Math.min(discountedFare, maxFare);
-		System.out.println("Tinh gia "+ stops+" tram" + ", "+passengerType+", "+finalFare+"VND");
-		return finalFare;
-	}
+		double rawFare;
+		 
+        if (stops <= 3) {
+            rawFare = 10000; // 1 - 3 tram
+        } else if (stops <= 6) {
+            rawFare = 15000; // 4 - 6 tram
+        } else if (stops <= 9) {
+            rawFare = 20000; // 7 - 9 tram
+        } else {
+            rawFare = 25000; // 10 tram tro len
+        }
+        double rate = discountRate.getOrDefault(passengerType, 1.0);
+        double finalFare = rawFare * rate;
+        
+        System.out.println("Tinh gia " + stops + " tram | "
+                + passengerType + " | "
+                + (int) rawFare + " x " + (int)(rate * 100) + "% = "
+                + (int) finalFare + " VND");
+ 
+        return finalFare;
+        }
 	
 	//Lap muc chiet khau cua mot loai hanh khach 
 	public double getDiscount(PassengerType type) {
@@ -189,7 +214,5 @@ public class FareConfig {
             System.out.println("Gia co ban phai > 0.");
         }
     }
-	
 
-	
 }
