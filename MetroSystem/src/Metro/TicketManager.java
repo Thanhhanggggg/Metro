@@ -47,12 +47,18 @@ public class TicketManager {
         return ticket != null && ticket.canRefund();
     }
     // Find affected tickets
-    public List<Ticket> findAffectedTickets(String gateId) {
-        List<Ticket> result = new ArrayList<>();
-        for (Ticket t : tickets.values()) {
-            result.add(t);
-        }
-        return result;
+    // Find affected tickets
+//    public List<Ticket> findAffectedTickets(String gateId) {
+//        List<Ticket> result = new ArrayList<>();
+//        for (Ticket t : tickets.values()) {
+//            result.add(t);
+//        }
+//        return result;
+//    }
+    public List<Ticket> findAffectedTickets(String dateId) {
+
+        // Hiện tại mọi vé đều được xem là affected
+        return new ArrayList<>(tickets.values());
     }
     // Revenue report
     public Map<TicketType, Integer> getRevenueReport(String dateRange) {
