@@ -13,13 +13,8 @@ public class TicketFactory {
             case DAILY:
                 return new DayPass(ticketId, pass);
             case MONTHLY:
-//                List<MetroLine> lines =
-//                        new ArrayList<>();
-//
-//                lines.add(line);
-                return new MonthlyPass(ticketId, pass
-//                        lines
-                );
+                List<MetroLine> lines = new ArrayList<>();
+                return new MonthlyPass(ticketId, pass, lines);
             default:
                 throw new IllegalArgumentException("Invalid ticket type");
         }
