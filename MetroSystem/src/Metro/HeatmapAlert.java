@@ -96,16 +96,6 @@ public class HeatmapAlert {
 				acknowledged ? "Xác nhận" : "Chờ xử lý");
 	}
 	
-	//TEST
-	public static void main(String[] args) {
-		Station station1 = new Station("S01", "Bến Thành", 500);
-		HeatmapAlert alert1 = new HeatmapAlert(station1, 0.86, AlertLevel.WARNING);
-		HeatmapAlert alert2 = new HeatmapAlert(station1, 0.97, AlertLevel.CRITICAL);
-		System.out.println(alert1);
-		System.out.println(alert2);
-		alert1.acknowledge();
-		System.out.println("Sau acknowledge(): " + alert1.isAcknowledged());
-		System.out.println(alert1);
-	}
+
 
 }

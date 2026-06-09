@@ -1,9 +1,9 @@
 package Metro;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-public class StationStaff extends Employee {
+public class StationStaff extends Employee implements Observer{
     private Station station;
     private boolean onDuty;
     private List<HeatmapAlert> observerState;
@@ -20,6 +20,12 @@ public class StationStaff extends Employee {
         }
 		
 	}
+	public void receiveAlert(HeatmapAlert alert) {
+		//Luu canh bao vao danh sach cua nhan vien
+		observerState.add(alert);
+		System.out.println("Staff: " + name + " - Nhận cảnh báo: " + alert.toString());
+	}
+
  // Kiểm tra vé thủ công
     public void checkStationTicket(Ticket ticket) {
         if(ticket == null) {

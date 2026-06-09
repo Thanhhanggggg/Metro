@@ -34,32 +34,6 @@ public class FullRefundPolicy implements RefundPolicy {
 		return "Quá " + PHUT_DUOC_HOAN + " phút, không đủ điều kiện hoàn";
 	}
 
-	// Test
-	public static void main(String[] args) {
-		FullRefundPolicy policy = new FullRefundPolicy();
-
-		Station s1 = new Station("S01", "Bến Thành", 500);
-		Station s2 = new Station("S02", "Nhà Hát Thành Phố", 300);
-		MetroLine ml = new MetroLine("L1", "Tuyến 1");
-		ml.addStation(s1);
-		ml.addStation(s2);
-		Passenger p = new Passenger("P001", "Test User");
-
-		Ticket ve = TicketManager.getInstance().issueTicket(p, TicketType.SINGLE, 1, s1, s2, ml);
-
-		System.out.println("Vé mới mua: " + ve);
-		// Vé mới, Active -> được hoàn
-		System.out.println("--- Vé ACTIVE  --");
-		System.out.println("canRefund: " + policy.canRefund(ve) + " | mong doi: true");
-		System.out.println("tienHoan: " + policy.getRefundAmount(ve) + " | mong doi: " + ve.getPrice());
-		System.out.println("lyDo: " + policy.getRefundReason(ve));
-
-		// Vé đã check-in (UsedState) -> không được hoàn
-		System.out.println("--- Vé  check-in (UsedState) ---");
-		TicketManager.getInstance().checkIn(ve.getTicketId(), s1);
-		System.out.println("canRefund: " + policy.canRefund(ve) + " | mong doi: false");
-		System.out.println("tienHoan: " + policy.getRefundAmount(ve) + " | mong doi: 0.0");
-		System.out.println("lyDo: " + policy.getRefundReason(ve));
-	}
+	
 
 }

@@ -107,56 +107,5 @@ public class HeatmapService implements Subject {
 		return alertHistory;
 	}
 	
-	//Test
-	public static void main(String[] args) {
-		System.out.println("========= TEST HEATMAPSERVICE ==========");
-		//Test Singleton
-		HeatmapService heatmapService1 = HeatmapService.getInstance();
-		HeatmapService heatmapService2 = HeatmapService.getInstance();
-		System.out.println("Singleton đúng: " + (heatmapService1==heatmapService2));
-		
-		//Tạo nhân viên và đăng ký
-		Station station1 = new Station("S01", "Bến Thành", 500);
-		StationStaff staff1 = new StationStaff("Staff01", "Nguyên Văn A", "123", station1);
-		StationStaff staff2 = new StationStaff("Staff02", "Trần Văn B", "456", station1);
-		heatmapService1.attach(staff1);
-		heatmapService1.attach(staff2);
-		System.out.println("Số lượng nhân viên đăng ký: " + heatmapService1.observers.size());
-		
-		//Test attach trùng
-		heatmapService1.attach(staff1);
-		System.out.println("Attach trùng - Số lượng nhân viên đăng ký: " + heatmapService1.observers.size());
-		
-		//Test analyzeRealtime - dưới ngưỡng
-		System.out.println("----- TEST NORMAL (không gửi alert) -----");
-		for (int i = 0; i < 100; i++) {
-			station1.incrementCheckin();
-		}
-		heatmapService1.analyzeRealtime(station1);
-		System.out.println("Số alert: " + heatmapService1.alertHistory.size());
-		
-		//Test analyzeRealtime - vượt ngưỡng
-		System.out.println("----- TEST WARNING (gửi alert) -----");
-		for (int i = 0; i < 320; i++) {
-			station1.incrementCheckin();
-		}
-		heatmapService1.analyzeRealtime(station1);
-		System.out.println("Số alert: " + heatmapService1.alertHistory.size());
-		System.out.println("Số alert staff 1 nhận: " + staff1.getObserverState().size());
-		System.out.println("Số alert staff 2 nhận: " + staff2.getObserverState().size());
-
-		//Test detach
-		System.out.println("----- DETACH STAFF2 -----");
-		heatmapService1.detach(staff2);
-		for (int i = 0; i < 55; i++) {
-			station1.incrementCheckin();		
-		}
-		heatmapService1.analyzeRealtime(station1);
-		System.out.println("Số alert staff 1 nhận: " + staff1.getObserverState().size());
-		System.out.println("Số alert staff 2 nhận: " + staff2.getObserverState().size());
-		
-		//Test getHeatmapreport
-		heatmapService1.getHeatmapReport();
-	}
-
+	
 }
