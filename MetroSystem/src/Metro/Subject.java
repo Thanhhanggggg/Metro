@@ -1,8 +1,7 @@
 package Metro;
 
 public interface Subject {
-	public void attach(StationStaff staff);
-	public void detach(StationStaff staff);
-	public void notifyObservers(HeatmapAlert alert);
-
+    public void attach(Observer observer);
+    public void detach(Observer observer);
+    public void notifyObserver();  
 }
