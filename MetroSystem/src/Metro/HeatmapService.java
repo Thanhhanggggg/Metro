@@ -5,9 +5,10 @@ import java.util.*;
 //Singleton + Observer
 public class HeatmapService implements Subject {
 	private static HeatmapService uniqueInstance;
-	private List<StationStaff> observers = new ArrayList<>();
+	private List<Observer> observers;
 	private double alertThreshold = 0.5;
-	private List<HeatmapAlert> alertHistory = new ArrayList<>();
+	private List<HeatmapAlert> alertHistory;
+    private HeatmapAlert latestAlert;
 
 	private HeatmapService() {
 		this.observers = new ArrayList<>();
@@ -15,6 +16,9 @@ public class HeatmapService implements Subject {
 	}
 
 	public static HeatmapService getUniqueInstance() {
+		if (uniqueInstance == null) {
+			uniqueInstance = new HeatmapService();
+		}
 		return uniqueInstance;
 	}
 
@@ -22,11 +26,15 @@ public class HeatmapService implements Subject {
 		HeatmapService.uniqueInstance = uniqueInstance;
 	}
 
-	public List<StationStaff> getObservers() {
+	public List<Observer> getObservers() {
 		return observers;
 	}
 
-	public void setObservers(List<StationStaff> observers) {
+	public HeatmapAlert getLatestAlert() {
+		return latestAlert;
+	}
+
+	public void setObservers(List<Observer> observers) {
 		this.observers = observers;
 	}
 
@@ -55,57 +63,63 @@ public class HeatmapService implements Subject {
 	}
 
 	@Override
-	public void attach(StationStaff staff) {
+	public void attach(Observer o) {
 		// TODO Auto-generated method stub
-		if (!observers.contains(staff)) {
-			observers.add(staff);
-			System.out.println("Đăng ký nhận cảnh báo: " + staff.getName());
-		}
+		 if (!observers.contains(o)) {
+	            observers.add(o);
+	            System.out.println("Dang ky nhan canh bao thanh cong.");
+	        }
+	    }
+
+	@Override
+	public void detach(Observer o) {
+		// TODO Auto-generated method stub
+		observers.remove(o);
+        System.out.println("Huy dang ky nhan canh bao thanh cong.");
 	}
 
 	@Override
-	public void detach(StationStaff staff) {
+	public void notifyObserver() {
 		// TODO Auto-generated method stub
-		observers.remove(staff);
-		System.out.println("Hủy đăng ký nhận cảnh báo: " + staff.getName());
-	}
-
-	@Override
-	public void notifyObservers(HeatmapAlert alert) {
-		// TODO Auto-generated method stub
-		System.out.println("Gửi cảnh báo đến " + observers.size() + " nhân viên");
-		for (StationStaff stationStaff : observers) {
-			stationStaff.update(alert);
-		}
+		System.out.println("Gui canh bao den " + observers.size() + " observer");
+        for (Observer observer : observers) {
+            observer.update();
+        }
 	}
 
 	public void analyzeRealtime(Station station) {
-		double rate = station.getOccupancyRate();
-		AlertLevel level = AlertLevel.fromRate(rate);
-		System.out.printf("[HeatmapService] Ga %-15s | %d/%d người | %.0f%% | %s%n", station.getStationName(),
-				station.getCheckInCount(), station.getCapacity(), rate * 100, level.getMoTa());
+		 double rate = station.getOccupancyRate();
+	        AlertLevel level = AlertLevel.fromRate(rate);
+	        System.out.printf("[HeatmapService] Ga %-15s | %d/%d nguoi | %.0f%% | %s%n",
+	                station.getStationName(),
+	                station.getCheckInCount(),
+	                station.getCapacity(),
+	                rate * 100,
+	                level.getMoTa());
 
-		// Chỉ tạo và gửi cảnh báo khi không phải NORMAL
-		if (level != AlertLevel.NORMAL) {
-			HeatmapAlert alert = new HeatmapAlert(station, rate, level);
-			alertHistory.add(alert);
-			notifyObservers(alert);
-		}
+	        if (level != AlertLevel.NORMAL) {
+	            latestAlert = new HeatmapAlert(station, rate, level);
+	            alertHistory.add(latestAlert);
+	            notify();
+	        }
 	}
 
 	public List<HeatmapAlert> getHeatmapReport() {
-		System.out.println("===== BÁO CÁO HEATMAP =====");
-		if (alertHistory.isEmpty()) {
-			System.out.println("  Chưa có cảnh báo nào.");
-		} else {
-			for (HeatmapAlert a : alertHistory) {
-				System.out.println("  " + a);
-			}
-		}
-		System.out.println("  Tổng: " + alertHistory.size() + " cảnh báo");
-		System.out.println("===========================");
-		return alertHistory;
+		System.out.println("===== BAO CAO HEATMAP =====");
+        if (alertHistory.isEmpty()) {
+            System.out.println("Chua co bao cao nao.");
+        } else {
+            for (HeatmapAlert a : alertHistory) {
+                System.out.println("  " + a);
+            }
+        }
+        System.out.println("  Tong: " + alertHistory.size() + "canh bao");
+        System.out.println("===========================");
+        return alertHistory;
+    
 	}
+
+	
 	
 	
 }
