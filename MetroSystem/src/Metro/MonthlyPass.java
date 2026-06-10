@@ -10,7 +10,7 @@ public class MonthlyPass extends Ticket {
     private int rideCount;
     private int maxRides;
     public MonthlyPass(String ticketId, Passenger passenger, List<MetroLine> validLines) {
-        super(ticketId, TicketType.MONTHLY, 0, passenger );
+        super(ticketId, TicketType.MONTHLY, 0, passenger, new NoRefundPolicy());
         this.validLines = validLines;
         this.validFrom = LocalDate.now();
         this.validUntil = validFrom.plusMonths(1);
