@@ -14,7 +14,7 @@ public class SingleTrip extends Ticket {
 //            Station origin,
 //            Station destination,
 //            MetroLine line,
-        super(ticketId, TicketType.SINGLE, 0, passenger);
+        super(ticketId, TicketType.SINGLE, 0, passenger, new FullRefundPolicy());
 //        this.origin = origin;
 //        this.destination = destination;
 //        this.line = line;
