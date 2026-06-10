@@ -155,5 +155,162 @@ public class Station {
 		String label = isTransfer ? "ga chuyen tuyen" : "ga thuong";
 		System.out.println("[" + stationName + "] Da dat la: " + label);
 	}
-	
+	public static void main(String[] args) {
+		 System.out.println("========================================");
+	        System.out.println("    KIEM TRA CLASS STATION");
+	        System.out.println("========================================");
+
+	        // Chuan bi du lieu dung chung
+	        MetroLine tuyen = new MetroLine("L1", "Tuyen Ben Thanh - Suoi Tien");
+	        Station ga1 = new Station("S01", "Ben Thanh", tuyen, 500);
+	        Station ga2 = new Station("S02", "Ba Son",    tuyen, 400);
+	        Station ga3 = new Station("S03", "Van Thanh", tuyen, 300);
+	        tuyen.addStation(ga1);
+	        tuyen.addStation(ga2);
+	        tuyen.addStation(ga3);
+
+	        // ------------------------------------------------
+	        // NHOM 1: KIEM TRA KHOI TAO
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 1: KIEM TRA KHOI TAO ---");
+
+	        System.out.println("stationId    = " + ga1.getStationId());     // S01
+	        System.out.println("stationName  = " + ga1.getStationName());   // Ben Thanh
+	        System.out.println("capacity     = " + ga1.getCapacity());      // 500
+	        System.out.println("checkInCount = " + ga1.getCheckInCount());  // 0
+	        System.out.println("isTransfer   = " + ga1.isTransfer());       // false
+
+	        // ------------------------------------------------
+	        // NHOM 2: KIEM TRA isOpen()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 2: KIEM TRA isOpen() ---");
+
+	        // Tuyen ACTIVE, sucChua > 0 -> true
+	        System.out.println("[Tuyen ACTIVE, sucChua=500] isOpen = " + ga1.isOpen()); // true
+
+	        // sucChua = 0 -> false
+	        Station gaKhongChua = new Station("S04", "Ga Khong Chua", tuyen, 0);
+	        System.out.println("[sucChua=0]                 isOpen = " + gaKhongChua.isOpen()); // false
+
+	        // Tuyen MAINTENANCE -> false
+	        MetroLine tuyenBaoTri = new MetroLine("L2", "Tuyen Bao Tri");
+	        tuyenBaoTri.setStatus(LineStatus.MAINTENANCE);
+	        Station gaBaoTri = new Station("S05", "Ga Bao Tri", tuyenBaoTri, 200);
+	        System.out.println("[Tuyen MAINTENANCE]         isOpen = " + gaBaoTri.isOpen()); // false
+
+	        // MetroLine null -> false
+	        Station gaKhongTuyen = new Station("S06", "Ga Null Tuyen", null, 200);
+	        System.out.println("[MetroLine null]            isOpen = " + gaKhongTuyen.isOpen()); // false
+
+	        // ------------------------------------------------
+	        // NHOM 3: KIEM TRA getOccupancyRate()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 3: KIEM TRA getOccupancyRate() ---");
+
+	        Station gaRate = new Station("S07", "Ga Rate", tuyen, 10);
+
+	        // Chua ai check-in -> 0.0
+	        System.out.println("[0/100]   occupancyRate = " + gaRate.getOccupancyRate()); // 0.0
+
+	        // Check-in 50 nguoi -> 0.5
+	        for (int i = 0; i < 5; i++) gaRate.incrementCheckIn();
+	        System.out.println("[50/10]  occupancyRate = " + gaRate.getOccupancyRate()); // 0.5
+
+	        // Check-in them 50 (day 100) -> 1.0
+	        for (int i = 0; i < 5; i++) gaRate.incrementCheckIn();
+	        System.out.println("[100/100] occupancyRate = " + gaRate.getOccupancyRate()); // 1.0
+
+	        // sucChua = 0 -> tranh chia cho 0, tra ve 0.0
+	        System.out.println("[sucChua=0] occupancyRate = " + gaKhongChua.getOccupancyRate()); // 0.0
+
+	        // ------------------------------------------------
+	        // NHOM 4: KIEM TRA isOverloaded()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 4: KIEM TRA isOverloaded() ---");
+
+	        Station gaQua = new Station("S08", "Ga Qua Tai", tuyen, 10);
+
+	        // Chua ai -> false
+	        System.out.println("[0/100]   isOverloaded = " + gaQua.isOverloaded()); // false
+
+	        // 94/100 = 0.94 < 0.95 -> false
+	        for (int i = 0; i < 9; i++) gaQua.incrementCheckIn();
+	        System.out.println("[94/100]  isOverloaded = " + gaQua.isOverloaded()); // false
+
+	        // 95/100 = 0.95 >= 0.95 -> true
+	        gaQua.incrementCheckIn();
+	        System.out.println("[95/100]  isOverloaded = " + gaQua.isOverloaded()); // true
+
+	        // ------------------------------------------------
+	        // NHOM 5: KIEM TRA incrementCheckIn() va decrementCheckin()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 5: KIEM TRA incrementCheckIn / decrementCheckin ---");
+
+	        Station gaTangGiam = new Station("S09", "Ga Tang Giam", tuyen, 10);
+
+	        gaTangGiam.incrementCheckIn(); // 1
+	        gaTangGiam.incrementCheckIn(); // 2
+	        gaTangGiam.incrementCheckIn(); // 3
+	        System.out.println("Sau 3 check-in  -> checkInCount = " + gaTangGiam.getCheckInCount()); // 3
+
+	        gaTangGiam.decrementCheckin();
+	        System.out.println("Sau 1 check-out -> checkInCount = " + gaTangGiam.getCheckInCount()); // 2
+
+	        gaTangGiam.decrementCheckin();
+	        gaTangGiam.decrementCheckin();
+	        gaTangGiam.decrementCheckin(); // goi du thua, kiem tra khong xuong am
+	        System.out.println("Sau check-out du thua -> checkInCount = " + gaTangGiam.getCheckInCount()); // 0
+
+	        // ------------------------------------------------
+	        // NHOM 6: KIEM TRA setCapacity()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 6: KIEM TRA setCapacity() ---");
+
+	        Station gaCapacity = new Station("S10", "Ga Capacity", tuyen, 100);
+	        System.out.println("Suc chua ban dau      = " + gaCapacity.getCapacity()); // 100
+
+	        gaCapacity.setCapacity(200);
+	        System.out.println("Sau setCapacity(200)  = " + gaCapacity.getCapacity()); // 200
+
+	        gaCapacity.setCapacity(0);
+	        System.out.println("Sau setCapacity(0)    = " + gaCapacity.getCapacity()); // 200 (giu nguyen)
+
+	        gaCapacity.setCapacity(-50);
+	        System.out.println("Sau setCapacity(-50)  = " + gaCapacity.getCapacity()); // 200 (giu nguyen)
+
+	        // ------------------------------------------------
+	        // NHOM 7: KIEM TRA setTransfer()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 7: KIEM TRA setTransfer() ---");
+
+	        System.out.println("isTransfer ban dau     = " + ga1.isTransfer()); // false
+
+	        ga1.setTransfer(true);
+	        System.out.println("Sau setTransfer(true)  = " + ga1.isTransfer()); // true
+
+	        ga1.setTransfer(false);
+	        System.out.println("Sau setTransfer(false) = " + ga1.isTransfer()); // false
+
+	        // ------------------------------------------------
+	        // NHOM 8: KIEM TRA getStopCount()
+	        // ------------------------------------------------
+	        System.out.println("\n--- NHOM 8: KIEM TRA getStopCount() ---");
+
+	        // Ben Thanh -> Van Thanh: 2 tram
+	        System.out.println("[Ben Thanh -> Van Thanh] stopCount = " + ga1.getStopCount(ga1, ga3)); // 2
+
+	        // Nguoc chieu: Van Thanh -> Ben Thanh: 2 tram
+	        System.out.println("[Van Thanh -> Ben Thanh] stopCount = " + ga3.getStopCount(ga3, ga1)); // 2
+
+	        // Cung 1 ga: 0 tram
+	        System.out.println("[Ben Thanh -> Ben Thanh] stopCount = " + ga1.getStopCount(ga1, ga1)); // 0
+
+	        // metroLine null -> -1
+	        System.out.println("[metroLine null]         stopCount = " + gaKhongTuyen.getStopCount(ga1, ga2)); // -1
+
+	        System.out.println("\n========================================");
+	        System.out.println("    KIEM TRA HOAN TAT");
+	        System.out.println("========================================");
+	 
+	}
 }

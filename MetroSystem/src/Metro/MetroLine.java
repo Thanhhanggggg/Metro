@@ -117,14 +117,14 @@ public class MetroLine {
 //		return fareConfig.calculateFare(stops, PassengerType.NORMAL);
 //
 //	}
-	        // Validate: kiểm tra hai ga có thuộc tuyến này không
+	        // Validate: kiem tra hai ga co thuoc tuyen nay khong
 	        int stops = getStopCount(s1, s2);
 	        if (stops == -1) {
-	            System.out.println("❌ Không tính được giá: ga không thuộc tuyến này.");
+	            System.out.println("Khong tinh duoc gia: ga khong thuoc tuyen nay.");
 	            return 0;
 	        }
 	 
-	        // Lấy FareConfig Singleton — nguồn dữ liệu giá duy nhất của hệ thống
+	        // Lay FareConfig Singleton — nguon du lieu gia duy nhat cua he thong
 	        FareConfig config = FareConfig.getInstance();
 	 
 	        double fare;
@@ -195,4 +195,72 @@ public class MetroLine {
 //	        // registry.get(lineId): tra cứu theo key → O(1), rất nhanh
 //	        return registry.get(lineId.trim());
 //	    }
+	
+
+	public static void main(String[] args) {
+	    System.out.println("========= TEST METROLINE =========");
+
+	    MetroLine line = new MetroLine("L1", "Tuyen Ben Thanh - Suoi Tien");
+
+	    // Tao cac ga
+	    Station s1 = new Station("S01", "Ben Thanh",    line, 500);
+	    Station s2 = new Station("S02", "Nha hat TP",   line, 300);
+	    Station s3 = new Station("S03", "Ba Son",        line, 400);
+	    Station s4 = new Station("S04", "Van Thanh",     line, 350);
+	    Station s5 = new Station("S05", "Tan Cang",      line, 300);
+
+	    // ---- Test addStation ----
+	    System.out.println("\n--- TEST addStation ---");
+	    line.addStation(s1);
+	    line.addStation(s2);
+	    line.addStation(s3);
+	    line.addStation(s4);
+	    line.addStation(s5);
+	    System.out.println("Tong so ga: " + line.getStations().size() + " | mong doi: 5");
+
+	    // Them ga trung
+	    line.addStation(s1);
+	    System.out.println("Sau khi them trung: " + line.getStations().size() + " | mong doi: 5");
+
+	    // ---- Test getStopCount ----
+	    System.out.println("\n--- TEST getStopCount ---");
+	    System.out.println("s1 -> s3: " + line.getStopCount(s1, s3) + " | mong doi: 2");
+	    System.out.println("s1 -> s5: " + line.getStopCount(s1, s5) + " | mong doi: 4");
+	    System.out.println("s3 -> s1: " + line.getStopCount(s3, s1) + " | mong doi: 2 (di nguoc)");
+
+	    // Ga khong thuoc tuyen
+	    Station sNgoai = new Station("S99", "Ga Ngoai", line, 100);
+	    System.out.println("Ga khong thuoc tuyen: " + line.getStopCount(s1, sNgoai) + " | mong doi: -1");
+
+	    // ---- Test findRoute ----
+	    System.out.println("\n--- TEST findRoute ---");
+	    List<Station> route = line.findRoute(s1, s4);
+	    System.out.println("s1 -> s4: " + route.size() + " ga | mong doi: 4");
+	    for (Station s : route) System.out.print(s.getStationName() + "\n ");
+
+	    System.out.println("\nRoute nguoc s4 -> s2:");
+	    List<Station> routeNguoc = line.findRoute(s4, s2);
+	    System.out.println("So ga: " + routeNguoc.size() + " | mong doi: 3");
+	    for (Station s : routeNguoc) System.out.print(s.getStationName() + "\n");
+
+	    System.out.println("\nRoute ga khong thuoc tuyen:");
+	    List<Station> routeNull = line.findRoute(s1, sNgoai);
+	    System.out.println("Ket qua: " + routeNull + " | mong doi: null");
+
+	    // ---- Test listFare ----
+	    System.out.println("\n--- TEST listFare ---");
+	    line.listFare(s1, s3, TicketType.SINGLE);   // 2 tram -> 10000
+	    line.listFare(s1, s5, TicketType.SINGLE);   // 4 tram -> 15000
+	    line.listFare(s1, s5, TicketType.DAILY);    // fixed daily
+	    line.listFare(s1, s5, TicketType.MONTHLY);  // fixed monthly
+	    line.listFare(s1, sNgoai, TicketType.SINGLE); // ga khong hop le -> 0
+
+	    // ---- Test setStatus ----
+	    System.out.println("\n--- TEST setStatus ---");
+	    System.out.println("Trang thai ban dau: " + line.getStatus() + " | mong doi: ACTIVE");
+	    line.setStatus(LineStatus.MAINTENANCE);
+	    System.out.println("Sau setStatus: " + line.getStatus() + " | mong doi: MAINTENANCE");
+
+	    System.out.println("\n========= KET THUC TEST METROLINE =========");
+	}
 }
