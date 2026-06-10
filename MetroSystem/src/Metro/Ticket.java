@@ -3,6 +3,7 @@ package Metro;
 import java.time.LocalDateTime;
 
 public abstract class Ticket {
+	protected RefundPolicy refundPolicy;
     protected String ticketId;
     protected TicketType type;
     protected TicketStatus status;
@@ -10,19 +11,16 @@ public abstract class Ticket {
     protected Passenger passenger;
     protected LocalDateTime purchasedAt;
     protected TicketState state;
-    public Ticket(String ticketId, TicketType type, double price, Passenger passenger) {
+    public Ticket(String ticketId, TicketType type, double price, Passenger passenger, RefundPolicy refundPolicy) {
         this.ticketId = ticketId;
         this.type = type;
         this.price = price;
         this.passenger = passenger;
         this.status = TicketStatus.ACTIVE;
         this.purchasedAt = LocalDateTime.now();
-        // State mặc định
         this.state = new ActiveState();
+        this.refundPolicy = refundPolicy; 
     }
-    // =========================
-    // Getter
-    // =========================
     public String getTicketId() {
         return ticketId;
     }
@@ -54,6 +52,9 @@ public abstract class Ticket {
     // =========================
     // Methods
     // =========================
+    public void setStrategy(RefundPolicy refundPolicy) {
+        this.refundPolicy = refundPolicy;
+    }
     public boolean isValid() {
         return state.isValid();
     }
@@ -84,13 +85,20 @@ public abstract class Ticket {
         }
     }
     // refund
-    public void refund() {
-        if(state.canRefund()) {
-            setState(new RefundedState());
-            System.out.println("Refund successful!");
-        } else {
-            System.out.println("Ticket cannot be refunded!");
+    public double refund() {
+        if (refundPolicy == null) {
+            System.out.println("Chua co chinh sach hoan ve!");
+            return 0.0;
         }
+        if (!refundPolicy.canRefund(this)) {
+            System.out.println("Khong du dieu kien hoan ve: " + refundPolicy.getRefundReason(this));
+            return 0.0;
+        }
+        double amount = refundPolicy.getRefundAmount(this);
+        setState(new RefundedState());
+        System.out.println("Hoan ve thanh cong! So tien hoan: " + amount + " VND");
+        System.out.println("Ly do: " + refundPolicy.getRefundReason(this));
+        return amount;
     }
 	public boolean isActive() {
 		// TODO Auto-generated method stub
