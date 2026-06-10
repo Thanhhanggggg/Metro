@@ -7,7 +7,7 @@ public class DayPass extends Ticket {
     private int ridesUsed;
     private boolean unlimitedRides;
     public DayPass(String ticketId, Passenger passenger) {
-        super(ticketId, TicketType.DAILY, 0, passenger);
+        super(ticketId, TicketType.DAILY, 0, passenger, new FullRefundPolicy());
         this.validDate = LocalDate.now();
         this.ridesUsed = 0;
         this.unlimitedRides = true;
