@@ -7,7 +7,6 @@ public class TicketManager {
     private static TicketManager uniqueInstance;
     // Attributes
     private Map<String, Ticket> tickets;
-    private RefundPolicy refundPolicy;
     // Private constructor
     private TicketManager() {
         tickets = new HashMap<>();
@@ -19,10 +18,7 @@ public class TicketManager {
         }
         return uniqueInstance;
     }
-    // Set refund policy
-    public void setRefundPolicy(RefundPolicy policy) {
-        this.refundPolicy = policy;
-    }
+  
     // Issue ticket
     public Ticket issueTicket(Passenger pass, TicketType type, int stops) {
         Ticket ticket = TicketFactory.factoryMethod(pass, type, stops);
@@ -31,12 +27,16 @@ public class TicketManager {
         }
         return ticket;
     }
-    // Refund ticket
     public boolean refundTicket(Ticket ticket) {
-        if (refundPolicy != null) {
-            return refundPolicy.canRefund(ticket);
+        if (!ticket.canRefund()) {
+            return false;
         }
-        return false;
+
+        double amount = ticket.refund();
+
+        ticket.setStatus(TicketStatus.REFUNDED);
+
+        return true;
     }
     // Find ticket by ID
     public Ticket findById(String id) {
