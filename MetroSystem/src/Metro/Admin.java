@@ -85,27 +85,7 @@ public class Admin extends Employee {
 
 	// Cap nhat thong tin tuyen Metro
 	public void updateLine(MetroLine metroLine, String newName, LineStatus status) {
-//		if (line == null) {
-//            System.out.println(" Tuyen metro khong ton tai.");
-//            return;
-//        }
-// 
-//        // Chi cap nhat ten neu ten moi khong null va khong rong
-//        if (newName != null && !newName.trim().isEmpty()) {
-//            String oldName = line.getLineName();
-//            line.setLineName(newName);
-//            System.out.println("Doi ten tuyen:" + oldName + "->" + newName );
-//        }
-// 
-//        // Cap nhat trang thai
-//        if (status != null) {
-//            line.setStatus(status);
-//            System.out.println("Trang thai tuyen " + line.getLineName()
-//                    + ": " + status);
-//        }
-// 
-//        System.out.println("cap nhat tuyen thanh cong: " + line);
-//    }
+
 //	    // B1: Kiem tra thong tin tuyen co ton tai khong
 		if (metroLine == null) {
 			System.out.println("Tuyen metro khong ton tai (null).");
@@ -157,294 +137,225 @@ public class Admin extends Employee {
 		return report;
 	}
 
-	static int passed = 0;
-	static int failed = 0;
-
 	public static void main(String[] args) {
-		System.out.println("========================================");
-		System.out.println("         TEST CLASS ADMIN               ");
-		System.out.println("========================================\n");
-
-		testLogin();
-		testLogout();
-		testSetFareDetail();
-		testUpdateDiscounts();
-		testAddStation();
-		testUpdateLine();
-		testRequestRevenueReport();
-		testRequestHeatmapReport();
-
-		System.out.println("\n========================================");
-		System.out.println("KET QUA: " + passed + " PASS | " + failed + " FAIL");
-		System.out.println("========================================");
-	}
-
-	// -----------------------------------------------
-	// HELPER: in ket qua tung test case
-	// -----------------------------------------------
-	static void assertTest(String testName, boolean condition) {
-		if (condition) {
-			System.out.println("  [PASS] " + testName);
-			passed++;
-		} else {
-			System.out.println("  [FAIL] " + testName);
-			failed++;
-		}
-	}
-
-	// =============================
-	// 1. TEST LOGIN / LOGOUT
-	// =============================
-	static void testLogin() {
-		System.out.println("--- 1. TEST LOGIN ---");
-		Admin admin = new Admin("A001", "Nguyen Van A", "mat_khau_123");
-
-		// Dang nhap dung mat khau
-		boolean ketQua1 = admin.login("mat_khau_123");
-		assertTest("Login dung mat khau -> true", ketQua1 == true);
-
-		// Dang nhap sai mat khau
-		boolean ketQua2 = admin.login("sai_mat_khau");
-		assertTest("Login sai mat khau -> false", ketQua2 == false);
-
-		// Mat khau rong
-		boolean ketQua3 = admin.login("");
-		assertTest("Login mat khau rong -> false", ketQua3 == false);
-
-		System.out.println();
-	}
-
-	// =============================
-	// 2. TEST LOGOUT
-	// =============================
-	static void testLogout() {
-		System.out.println("--- 2. TEST LOGOUT ---");
-		Admin admin = new Admin("A002", "Tran Thi B", "pass456");
-
-		// Logout khong nem exception la pass
-		try {
-			admin.logout();
-			assertTest("Logout khong nem exception", true);
-		} catch (Exception e) {
-			assertTest("Logout khong nem exception", false);
-		}
-
-		System.out.println();
-	}
-
-	// =============================
-	// 3. TEST SET FARE DETAIL
-	// =============================
-	static void testSetFareDetail() {
-		System.out.println("--- 3. TEST SET FARE DETAIL ---");
-		Admin admin = new Admin("A003", "Le Van C", "pass789");
-
-		// Reset FareConfig truoc moi test
-		FareConfig config = FareConfig.getInstance();
-
-		// Gia hop le
-		try {
-			admin.setFareDetail(8000, 1500);
-			assertTest("setFareDetail gia hop le -> khong nem exception", true);
-			assertTest("baseFare duoc cap nhat", config.getBaseFare() == 8000);
-			assertTest("farePerStop duoc cap nhat", config.getFarePerStop() == 1500);
-		} catch (Exception e) {
-			assertTest("setFareDetail gia hop le -> khong nem exception", false);
-		}
-
-		// baseFare = 0 (khong hop le)
-		double baseTruoc = config.getBaseFare();
-		admin.setFareDetail(0, 1500);
-		assertTest("setFareDetail baseFare=0 -> khong cap nhat", config.getBaseFare() == baseTruoc);
-
-		// perStop am
-		double perStopTruoc = config.getFarePerStop();
-		admin.setFareDetail(8000, -100);
-		assertTest("setFareDetail perStop am -> khong cap nhat", config.getFarePerStop() == perStopTruoc);
-
-		// Ca hai deu am
-		admin.setFareDetail(-1, -1);
-		assertTest("setFareDetail ca hai am -> khong cap nhat", config.getBaseFare() == baseTruoc);
-
-		System.out.println();
-	}
-
-	// =============================
-	// 4. TEST UPDATE DISCOUNTS
-	// =============================
-	static void testUpdateDiscounts() {
-		System.out.println("--- 4. TEST UPDATE DISCOUNTS ---");
-		Admin admin = new Admin("A004", "Pham Thi D", "pass000");
-
-		// Bang chiet khau hop le
-		Map<PassengerType, Double> bangHopLe = new HashMap<>();
-		bangHopLe.put(PassengerType.STUDENT, 0.65);
-		bangHopLe.put(PassengerType.SENIOR, 0.45);
-		try {
-			admin.updateDiscounts(bangHopLe);
-			double studentRate = FareConfig.getInstance().getDiscount(PassengerType.STUDENT);
-			double seniorRate = FareConfig.getInstance().getDiscount(PassengerType.SENIOR);
-			assertTest("updateDiscounts STUDENT -> 0.65", studentRate == 0.65);
-			assertTest("updateDiscounts SENIOR  -> 0.45", seniorRate == 0.45);
-		} catch (Exception e) {
-			assertTest("updateDiscounts hop le -> khong nem exception", false);
-		}
-
-		// Bang null
-		admin.updateDiscounts(null);
-		assertTest("updateDiscounts null -> khong crash", true); // Chi can khong nem exception
-
-		// Bang rong
-		admin.updateDiscounts(new HashMap<>());
-		assertTest("updateDiscounts rong -> khong crash", true);
-
-		// Rate ngoai khoang [0,1]
-		Map<PassengerType, Double> bangSai = new HashMap<>();
-		bangSai.put(PassengerType.NORMAL, 1.5);
-		try {
-			admin.updateDiscounts(bangSai);
-			assertTest("updateDiscounts rate > 1 -> khong cap nhat", true);
-		} catch (IllegalArgumentException e) {
-			// Co the nem exception — van chap nhan
-			assertTest("updateDiscounts rate > 1 -> xu ly loi", true);
-		}
-
-		System.out.println();
-	}
-
-	// =============================
-	// 5. TEST ADD STATION
-	// =============================
-	static void testAddStation() {
-		System.out.println("--- 5. TEST ADD STATION ---");
-		Admin admin = new Admin("A005", "Nguyen Thi E", "passXYZ");
-		MetroLine line = new MetroLine("L1", "Tuyen So 1");
-
-		// Them ga hop le
-		int soBanDau = line.getStations().size();
-		admin.addStation("Ga Ben Thanh", line, 500);
-		assertTest("addStation hop le -> so ga tang them 1", line.getStations().size() == soBanDau + 1);
-
-		// Them ga trung ten
-		int soSauThem1 = line.getStations().size();
-		admin.addStation("Ga Ben Thanh", line, 500);
-		// MetroLine.addStation() da kiem tra trung lap ben trong
-		// so ga khong nen tang them
-		assertTest("addStation trung ten -> so ga khong tang", line.getStations().size() == soSauThem1);
-
-		// Ten ga null
-		int soTruocNull = line.getStations().size();
-		admin.addStation(null, line, 300);
-		assertTest("addStation ten null -> khong them", line.getStations().size() == soTruocNull);
-
-		// Ten ga rong
-		admin.addStation("", line, 300);
-		assertTest("addStation ten rong -> khong them", line.getStations().size() == soTruocNull);
-
-		// MetroLine null
-		admin.addStation("Ga Moi", null, 300);
-		assertTest("addStation line null -> khong crash", true);
-
-		// Suc chua <= 0
-		int soTruocCapacity = line.getStations().size();
-		admin.addStation("Ga Suc Chua Am", line, -1);
-		assertTest("addStation capacity <= 0 -> khong them", line.getStations().size() == soTruocCapacity);
-
-		System.out.println();
-	}
-
-	// =============================
-	// 6. TEST UPDATE LINE
-	// =============================
-	static void testUpdateLine() {
-		System.out.println("--- 6. TEST UPDATE LINE ---");
-		Admin admin = new Admin("A006", "Hoang Van F", "passABC");
-		MetroLine line = new MetroLine("L2", "Tuyen So 2");
-
-		// Cap nhat ten hop le
-		admin.updateLine(line, "Tuyen Ben Thanh - Suoi Tien", LineStatus.ACTIVE);
-		assertTest("updateLine ten moi hop le", line.getLineName().equals("Tuyen Ben Thanh - Suoi Tien"));
-		assertTest("updateLine status moi", line.getStatus() == LineStatus.ACTIVE);
-
-		// Ten moi null -> giu nguyen ten cu
-		String tenTruoc = line.getLineName();
-		admin.updateLine(line, null, LineStatus.MAINTENANCE);
-		assertTest("updateLine ten null -> giu ten cu", line.getLineName().equals(tenTruoc));
-		assertTest("updateLine status van cap nhat khi ten null", line.getStatus() == LineStatus.MAINTENANCE);
-
-		// Ten moi rong -> giu nguyen
-		admin.updateLine(line, "   ", LineStatus.ACTIVE);
-		assertTest("updateLine ten rong -> giu ten cu", line.getLineName().equals(tenTruoc));
-
-		// Line null
-		try {
-			admin.updateLine(null, "Ten Moi", LineStatus.ACTIVE);
-			assertTest("updateLine line null -> khong crash", true);
-		} catch (Exception e) {
-			assertTest("updateLine line null -> khong crash", false);
-		}
-
-		System.out.println();
-	}
-
-	// =============================
-	// 7. TEST REQUEST REVENUE REPORT
-	// =============================
-	static void testRequestRevenueReport() {
-		System.out.println("--- 7. TEST REQUEST REVENUE REPORT ---");
-		Admin admin = new Admin("A007", "Do Thi G", "passDEF");
-
-		// Phat hanh mot so ve truoc khi test
-		Passenger hk = new Passenger("P001", "Khach 1", PassengerType.NORMAL, "CCCD001", 200000);
-		TicketManager.getInstance().issueTicket(hk, TicketType.SINGLE, 3);
-		TicketManager.getInstance().issueTicket(hk, TicketType.DAILY, 0);
-
-		// dateRange hop le
-		Map<TicketType, Integer> baocao = admin.requestRevenueReport("2025-01");
-		assertTest("requestRevenueReport dateRange hop le -> tra ve map", baocao != null);
-		assertTest("bao cao co it nhat 1 loai ve", baocao.size() >= 1);
-
-		// dateRange null
-		Map<TicketType, Integer> bcNull = admin.requestRevenueReport(null);
-		assertTest("requestRevenueReport null -> tra ve null", bcNull == null);
-
-		// dateRange rong
-		Map<TicketType, Integer> bcRong = admin.requestRevenueReport("   ");
-		assertTest("requestRevenueReport rong -> tra ve null", bcRong == null);
-
-		System.out.println();
-	}
-
-	// =============================
-	// 8. TEST REQUEST HEATMAP REPORT
-	// =============================
-	static void testRequestHeatmapReport() {
-		System.out.println("--- 8. TEST REQUEST HEATMAP REPORT ---");
-		Admin admin = new Admin("A008", "Vu Van H", "passGHI");
-
-		// Tao du lieu: ga + nhan vien + check-in gia lap
-		MetroLine line = new MetroLine("L3", "Tuyen Test");
-		Station station = new Station("S_T01", "Ga Test Heatmap", line, 10);
-
-		StationStaff staff = new StationStaff("ST001", "Nhan vien 1", "pass", "ST001");
-		HeatmapService.getInstance().attach(staff);
-
-		// Simulate nhieu check-in de kich hoat canh bao
-		for (int i = 0; i < 6; i++) {
-			station.incrementCheckIn();
-		}
-		HeatmapService.getInstance().analyzeRealtime(station); // >= 50% -> ATTENTION/WARNING
-
-		// Lay bao cao
-		List<HeatmapAlert> report = admin.requestHeatmapReport();
-		assertTest("requestHeatmapReport tra ve list", report != null);
-		assertTest("list co it nhat 1 canh bao sau khi vuot nguong", report.size() >= 1);
-
-		// Canh bao dung station
-		boolean dungStation = report.stream().anyMatch(a -> a.getStation().getStationName().equals("Ga Test Heatmap"));
-		assertTest("canh bao chua dung station", dungStation);
-
-		System.out.println();
-	}
-
+		 
+        System.out.println("========================================");
+        System.out.println("    KIEM TRA CLASS ADMIN");
+        System.out.println("========================================");
+ 
+        // ------------------------------------------------
+        // CHUAN BI DU LIEU DUNG CHUNG
+        // ------------------------------------------------
+        Admin admin = new Admin("A001", "Nguyen Van Admin", "pass123");
+ 
+        MetroLine line1 = new MetroLine("L1", "Ben Thanh - Suoi Tien");
+        Station benThanh = new Station("S01", "Ben Thanh", line1, 500);
+        Station suoiTien = new Station("S03", "Suoi Tien", line1, 400);
+        line1.addStation(benThanh);
+        line1.addStation(suoiTien);
+ 
+        Passenger hk1 = new Passenger("P001", "Nguyen Van A", PassengerType.NORMAL, "ID001", 200000);
+        Passenger hk2 = new Passenger("P002", "Tran Thi B", PassengerType.STUDENT, "ID002", 100000);
+ 
+        // Phat hanh truoc mot so ve de co du lieu bao cao
+        TicketManager.getInstance().issueTicket(hk1, TicketType.SINGLE, 3);
+        TicketManager.getInstance().issueTicket(hk1, TicketType.DAILY, 0);
+        TicketManager.getInstance().issueTicket(hk2, TicketType.MONTHLY, 0);
+ 
+        // ------------------------------------------------
+        // NHOM 1: KIEM TRA LOGIN / LOGOUT
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 1: KIEM TRA LOGIN / LOGOUT ---");
+ 
+        // Dang nhap dung mat khau
+        boolean loginDung = admin.login("pass123");
+        System.out.println("[Login dung] ket qua = true : " + (loginDung == true));
+ 
+        // Dang nhap sai mat khau
+        boolean loginSai = admin.login("sai_mat_khau");
+        System.out.println("[Login sai] ket qua = false: " + (loginSai == false));
+ 
+        // Dang nhap mat khau rong
+        boolean loginRong = admin.login("");
+        System.out.println("[Login rong] ket qua = false: " + (loginRong == false));
+ 
+        // Logout khong crash
+        System.out.print("[Logout]khong crash: ");
+        admin.logout();
+        System.out.println("true");
+ 
+        // ------------------------------------------------
+        // NHOM 2: KIEM TRA setFareDetail()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 2: KIEM TRA setFareDetail() ---");
+ 
+        FareConfig config = FareConfig.getInstance();
+ 
+        // Gia hop le -> cap nhat thanh cong
+        admin.setFareDetail(8000, 1500);
+        System.out.println("[Gia hop le] baseFare = 8000 : " + (config.getBaseFare() == 8000));
+        System.out.println("[Gia hop le] perStop  = 1500 : " + (config.getFarePerStop() == 1500));
+ 
+        // baseFare = 0 -> khong cap nhat
+        double baseTruoc = config.getBaseFare();
+        admin.setFareDetail(0, 1500);
+        System.out.println("[baseFare = 0]  khong cap nhat  : " + (config.getBaseFare() == baseTruoc));
+ 
+        // perStop am -> khong cap nhat
+        double perStopTruoc = config.getFarePerStop();
+        admin.setFareDetail(8000, -100);
+        System.out.println("[perStop am] khong cap nhat  : " + (config.getFarePerStop() == perStopTruoc));
+ 
+        // Ca hai am -> khong cap nhat
+        admin.setFareDetail(-1, -1);
+        System.out.println("[Ca hai am] khong cap nhat  : " + (config.getBaseFare() == baseTruoc));
+ 
+        // ------------------------------------------------
+        // NHOM 3: KIEM TRA updateDiscounts()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 3: KIEM TRA updateDiscounts() ---");
+ 
+        // Bang hop le -> cap nhat thanh cong
+        Map<PassengerType, Double> bangHopLe = new HashMap<>();
+        bangHopLe.put(PassengerType.STUDENT, 0.65);
+        bangHopLe.put(PassengerType.SENIOR, 0.45);
+        admin.updateDiscounts(bangHopLe);
+        System.out.println("[STUDENT = 0.65] cap nhat dung  : " + (config.getDiscount(PassengerType.STUDENT) == 0.65));
+        System.out.println("[SENIOR  = 0.45] cap nhat dung  : " + (config.getDiscount(PassengerType.SENIOR)  == 0.45));
+ 
+        // Bang null -> khong crash
+        System.out.print("[Bang null] khong crash : ");
+        admin.updateDiscounts(null);
+        System.out.println("true");
+ 
+        // Bang rong -> khong crash
+        System.out.print("[Bang rong] khong crash : ");
+        admin.updateDiscounts(new HashMap<>());
+        System.out.println("true");
+ 
+        // Rate > 1 -> khong cap nhat hoac bao loi
+        System.out.print("[Rate > 1] xu ly an toan   : ");
+        try {
+            Map<PassengerType, Double> bangSai = new HashMap<>();
+            bangSai.put(PassengerType.NORMAL, 1.5);
+            admin.updateDiscounts(bangSai);
+            System.out.println("true (xu ly khong crash)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("true (Exception: " + e.getClass().getSimpleName() + ")");
+        }
+ 
+        // ------------------------------------------------
+        // NHOM 4: KIEM TRA addStation()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 4: KIEM TRA addStation() ---");
+ 
+        int soBanDau = line1.getStations().size();
+ 
+        // Them ga hop le -> so ga tang
+        admin.addStation("Ga Moi 1", line1, 300);
+        System.out.println("[Them hop le] so ga tang 1 : " + (line1.getStations().size() == soBanDau + 1));
+ 
+        // Them ga trung ten -> khong tang
+        int soSauThem = line1.getStations().size();
+        admin.addStation("Ga Moi 1", line1, 300);
+        System.out.println("[Trung ten] so ga khong tang: " + (line1.getStations().size() == soSauThem));
+ 
+        // Ten null -> khong them
+        int soTruocNull = line1.getStations().size();
+        admin.addStation(null, line1, 300);
+        System.out.println("[Ten null] khong them : " + (line1.getStations().size() == soTruocNull));
+ 
+        // Ten rong -> khong them
+        admin.addStation("", line1, 300);
+        System.out.println("[Ten rong] khong them : " + (line1.getStations().size() == soTruocNull));
+ 
+        // MetroLine null -> khong crash
+        System.out.print("[Line null] khong crash : ");
+        admin.addStation("Ga X", null, 300);
+        System.out.println("true");
+ 
+        // Capacity <= 0 -> khong them
+        int soTruocCap = line1.getStations().size();
+        admin.addStation("Ga Cap Am", line1, -1);
+        System.out.println("[Capacity <= 0] khong them : " + (line1.getStations().size() == soTruocCap));
+ 
+        // ------------------------------------------------
+        // NHOM 5: KIEM TRA updateLine()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 5: KIEM TRA updateLine() ---");
+ 
+        MetroLine lineTest = new MetroLine("LT", "Tuyen Test");
+ 
+        // Cap nhat ten va status hop le
+        admin.updateLine(lineTest, "Tuyen Da Cap Nhat", LineStatus.ACTIVE);
+        System.out.println("[Ten moi hop le] ten dung : " + lineTest.getLineName().equals("Tuyen Da Cap Nhat"));
+        System.out.println("[Status moi] status dung : " + (lineTest.getStatus() == LineStatus.ACTIVE));
+ 
+        // Ten null -> giu ten cu
+        String tenTruoc = lineTest.getLineName();
+        admin.updateLine(lineTest, null, LineStatus.MAINTENANCE);
+        System.out.println("[Ten null] giu ten cu      : " + lineTest.getLineName().equals(tenTruoc));
+        System.out.println("[Ten null] status van doi  : " + (lineTest.getStatus() == LineStatus.MAINTENANCE));
+ 
+        // Ten rong (khoang trang) -> giu ten cu
+        admin.updateLine(lineTest, "   ", LineStatus.ACTIVE);
+        System.out.println("[Ten rong] giu ten cu : " + lineTest.getLineName().equals(tenTruoc));
+ 
+        // Line null -> khong crash
+        System.out.print("[Line null] khong crash : ");
+        admin.updateLine(null, "Ten Moi", LineStatus.ACTIVE);
+        System.out.println("true");
+ 
+        // ------------------------------------------------
+        // NHOM 6: KIEM TRA requestRevenueReport()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 6: KIEM TRA requestRevenueReport() ---");
+ 
+        // dateRange hop le -> tra ve map co du lieu
+        Map<TicketType, Integer> baocao = admin.requestRevenueReport("2025-01");
+        System.out.println("[dateRange hop le] != null : " + (baocao != null));
+        System.out.println("[dateRange hop le] co it nhat 1  : " + (baocao != null && baocao.size() >= 1));
+ 
+        // dateRange null -> tra ve null
+        Map<TicketType, Integer> bcNull = admin.requestRevenueReport(null);
+        System.out.println("[dateRange null]   tra ve null   : " + (bcNull == null));
+ 
+        // dateRange rong -> tra ve null
+        Map<TicketType, Integer> bcRong = admin.requestRevenueReport("   ");
+        System.out.println("[dateRange rong]   tra ve null   : " + (bcRong == null));
+ 
+        // ------------------------------------------------
+        // NHOM 7: KIEM TRA requestHeatmapReport()
+        // ------------------------------------------------
+        System.err.println("\n--- NHOM 7: KIEM TRA requestHeatmapReport() ---");
+ 
+        // Tao du lieu: nhan vien dang ky + check-in de kich canh bao
+        MetroLine lineHM = new MetroLine("LH", "Tuyen Heatmap");
+        Station gaHM = new Station("SH1", "Ga Heatmap Test", lineHM, 10);
+        StationStaff staff = new StationStaff("ST001", "Nhan Vien 1", "pass", "ST001");
+        HeatmapService.getInstance().attach(staff);
+ 
+        // Check-in qua nguong 50%
+        for (int i = 0; i < 6; i++) gaHM.incrementCheckIn();
+        HeatmapService.getInstance().analyzeRealtime(gaHM);
+ 
+        // Lay bao cao -> co du lieu
+        List<HeatmapAlert> report = admin.requestHeatmapReport();
+        System.out.println("[Sau check-in] report != null: " + (report != null));
+        System.out.println("[Sau check-in] co it nhat 1 alt : " + (report != null && report.size() >= 1));
+ 
+        // Canh bao chua dung ga
+        boolean dungGa = report != null && report.stream()
+                .anyMatch(a -> a.getStation().getStationName().equals("Ga Heatmap Test"));
+        System.out.println("[Canh bao] dung station : " + dungGa);
+ 
+        // Goi lien tiep lan 2 -> khong crash
+        System.out.print("[Goi lan 2] khong crash : ");
+        admin.requestHeatmapReport();
+        System.out.println("true");
+ 
+        System.out.println("\n========================================");
+        System.out.println("    KIEM TRA HOAN TAT");
+        System.out.println("========================================");
+    }
 }
