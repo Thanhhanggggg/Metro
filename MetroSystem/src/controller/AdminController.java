@@ -56,7 +56,8 @@ public class AdminController implements IController {
 		case "ADD_STATION" -> handleAddStation((String) params[0], (MetroLine) params[1], (int) params[2]);
 		case "UPDATE_STATION" -> handleUpdateStation((Station) params[0], (String) params[1], (int) params[2]);
 		case "REMOVE_STATION" -> handleRemoveStation((Station) params[0], (MetroLine) params[1]);
-		case "SET_FARE" -> handleSetFare((double) params[0], (double) params[1]);
+		case "SET_FARE" ->
+			handleSetFare((double) params[0], (double) params[1], (double) params[2], (double) params[3]);
 		case "UPDATE_DISCOUNTS" -> handleUpdateDiscounts((Map<PassengerType, Double>) params[0]);
 		case "REVENUE_REPORT" -> handleRevenueReport((String) params[0]);
 		case "HEATMAP_REPORT" -> handleHeatmapReport();
@@ -198,15 +199,24 @@ public class AdminController implements IController {
 	}
 
 	// Cau hinh gia ve
-	private void handleSetFare(double base, double perStop) {
+	private void handleSetFare(double base, double perStop, double daily, double monthly) {
 		if (base <= 0 || perStop <= 0) {
-			view.showError("Gia phai > 0!");
+			view.showError("Gia co ban va gia moi tram phai > 0!");
+			return;
+		}
+		if (daily <= 0 || monthly <= 0) {
+			view.showError("Gia ve ngay va ve thang phai > 0!");
 			return;
 		}
 		admin.setFareDetail(base, perStop);
 		FareConfig cfg = FareConfig.getInstance();
-		view.showInfo(String.format("Cap nhat gia: Co ban=%.0f VND | Moi tram=%.0f VND", cfg.getBaseFare(),
-				cfg.getFarePerStop()));
+		cfg.setFixedPriceDaily(daily);
+		cfg.setFixedPriceMonthly(monthly);
+
+		view.showInfo(String.format(
+				"Cap nhat gia thanh cong!\n" + "  Co ban    : %,.0f VND\n" + "  Moi tram  : %,.0f VND\n"
+						+ "  Ve ngay   : %,.0f VND\n" + "  Ve thang  : %,.0f VND",
+				cfg.getBaseFare(), cfg.getFarePerStop(), cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
 	}
 
 	// Cap nhat bang chiet khau
@@ -225,13 +235,14 @@ public class AdminController implements IController {
 
 	// Bao cao doanh thu
 	private void handleRevenueReport(String dateRange) {
-	    if (!validate(dateRange)) {
-	        view.showError("Vui long nhap khoang thoi gian!");
-	        return;
-	    }
-	    Map<TicketType, Double> report = admin.requestRevenueReport(dateRange);
-	    view.showRevenueReport(report);
+		if (!validate(dateRange)) {
+			view.showError("Vui long nhap khoang thoi gian!");
+			return;
+		}
+		Map<TicketType, Double> report = admin.requestRevenueReport(dateRange);
+		view.showRevenueReport(report);
 	}
+
 	// Bao cao heatmap
 	private void handleHeatmapReport() {
 		var report = admin.requestHeatmapReport();
