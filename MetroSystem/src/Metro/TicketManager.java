@@ -61,11 +61,11 @@ public class TicketManager {
         return new ArrayList<>(tickets.values());
     }
     // Revenue report
-    public Map<TicketType, Integer> getRevenueReport(String dateRange) {
-        Map<TicketType, Integer> report = new HashMap<>();
+ public Map<TicketType, Double> getRevenueReport(String dateRange) {
+        Map<TicketType, Double> report = new HashMap<>();
         for (Ticket t : tickets.values()) {
             TicketType type = t.getType();
-            report.put(type, report.getOrDefault(type, 0) + 1);
+            report.put(type, report.getOrDefault(type, 0.0) + t.getPrice());
         }
         return report;
     }
