@@ -1,6 +1,6 @@
-package View;
+package view;
 
-import Controller.*;
+import controller.*;
 import Metro.*;
 import javax.swing.*;
 import javax.swing.border.*;

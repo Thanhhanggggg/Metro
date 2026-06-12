@@ -1,4 +1,4 @@
-package Controller;
+package controller;
 
 public interface IController {
     void handleAction(String action, Object... params);
