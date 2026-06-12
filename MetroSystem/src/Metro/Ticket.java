@@ -3,15 +3,19 @@ package Metro;
 import java.time.LocalDateTime;
 
 public abstract class Ticket {
-	protected RefundPolicy refundPolicy;
+    protected RefundPolicy refundPolicy;
     protected String ticketId;
     protected TicketType type;
     protected TicketStatus status;
     protected double price;
     protected Passenger passenger;
     protected LocalDateTime purchasedAt;
+    // State Pattern
     protected TicketState state;
-    public Ticket(String ticketId, TicketType type, double price, Passenger passenger, RefundPolicy refundPolicy) {
+    // =========================
+    // Constructor
+    // =========================
+    public Ticket(String ticketId,TicketType type,double price,Passenger passenger,RefundPolicy refundPolicy) {
         this.ticketId = ticketId;
         this.type = type;
         this.price = price;
@@ -19,8 +23,9 @@ public abstract class Ticket {
         this.status = TicketStatus.ACTIVE;
         this.purchasedAt = LocalDateTime.now();
         this.state = new ActiveState();
-        this.refundPolicy = refundPolicy; 
+        this.refundPolicy = refundPolicy;
     }
+    // Getters
     public String getTicketId() {
         return ticketId;
     }
@@ -30,7 +35,6 @@ public abstract class Ticket {
     public TicketStatus getStatus() {
         return status;
     }
-
     public double getPrice() {
         return price;
     }
@@ -43,64 +47,70 @@ public abstract class Ticket {
     public TicketState getState() {
         return state;
     }
-    // =========================
-    // Setter
-    // =========================
+    public RefundPolicy getRefundPolicy() {
+        return refundPolicy;
+    }
+    // Setters
+    public void setStatus(TicketStatus status) {
+        this.status = status;
+    }
     public void setState(TicketState state) {
         this.state = state;
     }
-    // =========================
-    // Methods
-    // =========================
+    // Cho phép thay đổi Strategy runtime
     public void setStrategy(RefundPolicy refundPolicy) {
         this.refundPolicy = refundPolicy;
     }
-    public boolean isValid() {
-        return state.isValid();
-    }
+    // Abstract Methods
     public abstract double calcPrice(TicketType type);
+    public abstract boolean isValid();
+    // Common Methods
     public String generateQR() {
         return "QR-" + ticketId;
     }
     public void read() {
         System.out.println("Reading ticket: " + ticketId);
     }
-    public boolean canRefund() {
-        return state.canRefund();
-    }
-    // check-in
+    // State Pattern
     public void checkIn() {
-        if(state.isValid()) {
+        if(state instanceof ActiveState) {
             state.handle(this);
+            status = TicketStatus.USED;
         } else {
-            System.out.println("Ticket invalid for check-in!");
+            System.out.println( "Ticket already checked in!");
         }
     }
-    // check-out
     public void checkOut() {
         if(state instanceof UsedState) {
             state.handle(this);
+            status = TicketStatus.EXPIRED;
         } else {
-            System.out.println("Ticket invalid for check-out!");
+            System.out.println("Ticket not in journey!");
         }
     }
-    // refund
-    public double refund() {
-        if (refundPolicy == null) {
-            System.out.println("Chua co chinh sach hoan ve!");
-            return 0.0;
+    // Strategy Pattern
+    public boolean canRefund() {
+        if(state == null || refundPolicy == null) {
+            return false;
         }
-        if (!refundPolicy.canRefund(this)) {
-            System.out.println("Khong du dieu kien hoan ve: " + refundPolicy.getRefundReason(this));
-            return 0.0;
+        return state.canRefund() && refundPolicy.canRefund(this);
+    }
+    public double refund() {
+        if(refundPolicy == null) {
+            System.out.println("Chưa có RefundPolicy");
+            return 0;
+        }
+        if(!state.canRefund()) {
+            System.out.println("Trạng thái vé không cho phép hoàn");
+            return 0;
         }
         double amount = refundPolicy.getRefundAmount(this);
-		setStatus(TicketStatus.REFUNDED);
+        setStatus(TicketStatus.REFUNDED);
         setState(new RefundedState());
-        System.out.println("Hoan ve thanh cong! So tien hoan: " + amount + " VND");
-        System.out.println("Ly do: " + refundPolicy.getRefundReason(this));
+        System.out.println( "Refund success: " + amount);
         return amount;
     }
+<<<<<<< HEAD
 	public boolean isActive() {
 		// TODO Auto-generated method stub
 		return status == TicketStatus.ACTIVE;
@@ -110,6 +120,13 @@ public abstract class Ticket {
 	}
 	@Override
 	 public String toString() {
+=======
+    public boolean isActive() {
+        return state instanceof ActiveState;
+    }
+    @Override
+    public String toString() {
+>>>>>>> branch 'master' of https://github.com/Thanhhanggggg/Metro.git
         return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";
     }
 }
