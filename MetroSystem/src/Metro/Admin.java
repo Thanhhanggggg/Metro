@@ -2,9 +2,11 @@ package Metro;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Admin extends Employee {
+	private List<MetroLine> metroLines = new ArrayList<>();
 
 	public Admin(String employeeId, String name, String password) {
 		super(employeeId, name, password);
@@ -85,7 +87,27 @@ public class Admin extends Employee {
 
 	// Cap nhat thong tin tuyen Metro
 	public void updateLine(MetroLine metroLine, String newName, LineStatus status) {
-
+//		if (line == null) {
+//            System.out.println(" Tuyen metro khong ton tai.");
+//            return;
+//        }
+// 
+//        // Chi cap nhat ten neu ten moi khong null va khong rong
+//        if (newName != null && !newName.trim().isEmpty()) {
+//            String oldName = line.getLineName();
+//            line.setLineName(newName);
+//            System.out.println("Doi ten tuyen:" + oldName + "->" + newName );
+//        }
+// 
+//        // Cap nhat trang thai
+//        if (status != null) {
+//            line.setStatus(status);
+//            System.out.println("Trang thai tuyen " + line.getLineName()
+//                    + ": " + status);
+//        }
+// 
+//        System.out.println("cap nhat tuyen thanh cong: " + line);
+//    }
 //	    // B1: Kiem tra thong tin tuyen co ton tai khong
 		if (metroLine == null) {
 			System.out.println("Tuyen metro khong ton tai (null).");
@@ -136,7 +158,49 @@ public class Admin extends Employee {
 		System.out.println("Bao cao HeatMap:\n" + report);
 		return report;
 	}
+	// Method dang ky tuyen vao he thong (goi khi tao tuyen moi):
+	public void registerLine(MetroLine metroLine) {
+	    if (metroLine == null) return;
+	    if (!metroLines.contains(metroLine)) {
+	        metroLines.add(metroLine);
+	        System.out.println("Da dang ky tuyen: " + metroLine.getLineName());
+	    }
+	}
 
+	// Xoa ga khoi mot tuyen cu the:
+	public boolean removeStation(Station station, MetroLine metroLine) {
+	    if (station == null) {
+	        System.out.println("Station khong hop le (null).");
+	        return false;
+	    }
+	    if (metroLine == null) {
+	        System.out.println("Tuyen metro khong hop le (null).");
+	        return false;
+	    }
+	    boolean result = metroLine.removeStation(station);
+	    if (result) {
+	        System.out.println("Admin da xoa ga " + station.getStationName()
+	            + " khoi tuyen " + metroLine.getLineName() + ".");
+	    }
+	    return result;
+	}
+
+	// Xoa toan bo mot tuyen metro:
+	public boolean removeMetroLine(MetroLine metroLine) {
+	    if (metroLine == null) {
+	        System.out.println("Tuyen metro khong hop le (null).");
+	        return false;
+	    }
+	    if (!metroLines.contains(metroLine)) {
+	        System.out.println("Tuyen " + metroLine.getLineName() + " khong ton tai trong he thong.");
+	        return false;
+	    }
+	    // Vo hieu hoa tuyen truoc khi xoa de cac SmartGate/Station lien quan biet tuyen da dong
+	    metroLine.setStatus(LineStatus.TNACTIVE);
+	    metroLines.remove(metroLine);
+	    System.out.println("Da xoa tuyen " + metroLine.getLineName() + " khoi he thong.");
+	    return true;
+	}
 	public static void main(String[] args) {
 		 
         System.out.println("========================================");
