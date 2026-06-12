@@ -263,4 +263,7 @@ public class PassengerView extends JPanel {
     public void showFareResult(String result) {
         taBuyResult.setText(result);
     }
+     public void showCancelResult(String message) {
+        JOptionPane.showMessageDialog(this,message, "Hủy vé",JOptionPane.INFORMATION_MESSAGE);
+    }
 }
