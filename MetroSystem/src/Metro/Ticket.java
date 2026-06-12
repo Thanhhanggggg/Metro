@@ -110,7 +110,7 @@ public abstract class Ticket {
         System.out.println( "Refund success: " + amount);
         return amount;
     }
-<<<<<<< HEAD
+
 	public boolean isActive() {
 		// TODO Auto-generated method stub
 		return status == TicketStatus.ACTIVE;
@@ -118,15 +118,8 @@ public abstract class Ticket {
 	public boolean canPass(GateType gateType) {
 	    return state.canPass(gateType);
 	}
-	@Override
-	 public String toString() {
-=======
-    public boolean isActive() {
-        return state instanceof ActiveState;
-    }
     @Override
     public String toString() {
->>>>>>> branch 'master' of https://github.com/Thanhhanggggg/Metro.git
         return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";
     }
 }
