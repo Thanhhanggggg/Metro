@@ -16,27 +16,33 @@ public class FareConfig {
 	private LocalDate effectiveDate;
 	private static FareConfig uniqueInstance;
 
+//	public FareConfig(String configId) {
+//		super();
+//		this.configId = configId;
+//		this.baseFare = 7000;// qua 1 ga
+//		this.farePerStop = 10000;// qua 3 ga tro len
+//		this.maxFare = 20000;
+//		this.fixedPriceDaily = 40000;
+//		this.fixedPriceMonthly = 300000;
+//		this.discountRate = new HashMap<>();// bang chiet khau
+//
+//		discountRate.put(PassengerType.NORMAL, 1.0); // Người thuong: 100% gia
+//		discountRate.put(PassengerType.STUDENT, 0.7); // Sinh vien: 70% gia
+//		discountRate.put(PassengerType.SENIOR, 0.5); // Nguoi cao tuoi: 50% gia
+//		discountRate.put(PassengerType.DISABLE, 0.0);
+//
+//		this.effectiveDate = LocalDate.now();// co hieu luc tu ngay hom nay theo lich hien hanh
+//	}
 	public FareConfig(String configId) {
-		super();
 		this.configId = configId;
-		this.baseFare = 7000;// qua 1 ga
-		this.farePerStop = 10000;// qua 3 ga tro len
-		this.maxFare = 20000;
-		this.fixedPriceDaily = 40000;
-		this.fixedPriceMonthly = 300000;
-		this.discountRate = new HashMap<>();// bang chiet khau
-
-		discountRate.put(PassengerType.NORMAL, 1.0); // Người thuong: 100% gia
-		discountRate.put(PassengerType.STUDENT, 0.7); // Sinh vien: 70% gia
-		discountRate.put(PassengerType.SENIOR, 0.5); // Nguoi cao tuoi: 50% gia
-		discountRate.put(PassengerType.DISABLE, 0.0);
-
-		this.effectiveDate = LocalDate.now();// co hieu luc tu ngay hom nay theo lich hien hanh
+		initDefaults();
 	}
 
 	public FareConfig() {
-		super();
-		this.configId = configId;
+		initDefaults();
+	}
+
+	private void initDefaults() {
 		this.baseFare = 7000;// qua 1 ga
 		this.farePerStop = 10000;// qua 3 ga tro len
 		this.maxFare = 25000;
@@ -68,17 +74,10 @@ public class FareConfig {
 		return farePerStop;
 	}
 
-	public void setFarePerStop(double farePerStop) {
-		this.farePerStop = farePerStop;
-	}
-
 	public double getMaxFare() {
 		return maxFare;
 	}
 
-	public void setMaxFare(double maxFare) {
-		this.maxFare = maxFare;
-	}
 
 	public double getFixedPriceDaily() {
 		return fixedPriceDaily;
@@ -88,9 +87,7 @@ public class FareConfig {
 		return fixedPriceMonthly;
 	}
 
-	public void setFixedPriceMonthly(double fixedPriceMonthly) {
-		this.fixedPriceMonthly = fixedPriceMonthly;
-	}
+
 
 	public Map<PassengerType, Double> getDiscountRate() {
 		return discountRate;
@@ -124,31 +121,27 @@ public class FareConfig {
 		return uniqueInstance;
 	}
 
+//====================================================================================================================
 	public double calculateFare(int stops, PassengerType passengerType) {
 		if (stops < 0) {
-			System.out.println("So tram khong hop le: " + stops);
-			return 0;
-		}
-		double rawFare;
-
-		if (stops <= 3) {
-			rawFare = 10000; // 1 - 3 tram
-		} else if (stops <= 6) {
-			rawFare = 15000; // 4 - 6 tram
-		} else if (stops <= 9) {
-			rawFare = 20000; // 7 - 9 tram
-		} else {
-			rawFare = 25000; // 10 tram tro len
-		}
-		double rate = discountRate.getOrDefault(passengerType, 1.0);
-		double finalFare = rawFare * rate;
-
-		System.out.println("Tinh gia " + stops + " tram | " + passengerType + " | " + (int) rawFare + " x "
-				+ (int) (rate * 100) + "% = " + (int) finalFare + " VND");
-
-		return finalFare;
-	}
-
+            System.out.println("So tram khong hop le: " + stops);
+            return 0;
+        }
+         double rawFare = baseFare + (stops * farePerStop);
+         if (rawFare > maxFare) {
+            rawFare = maxFare;
+        }
+        double rate = discountRate.getOrDefault(passengerType, 1.0);
+        double finalFare = rawFare * rate;
+ 
+        System.out.println("Tinh gia " + stops + " tram | " + passengerType
+                + " | baseFare=" + (int) baseFare
+                + " + " + stops + "x" + (int) farePerStop
+                + " = " + (int) rawFare
+                + " x " + (int) (rate * 100) + "% = " + (int) finalFare + " VND");
+ 
+        return finalFare;
+    }
 	// Lap muc chiet khau cua mot loai hanh khach
 	public double getDiscount(PassengerType type) {
 		return discountRate.getOrDefault(type, 1.0);
@@ -163,17 +156,6 @@ public class FareConfig {
 		discountRate.put(type, rate);
 		System.out.println("Chiet khau " + type + " cap nhat: " + (int) (rate * 100) + "%");
 	}
-
-	// Cap nhat gia ve co ban
-//	public double getBaseFare(double baseFare) {
-//		 if (baseFare > 0) {
-//	            this.baseFare = baseFare;
-//	            System.out.printf("Cap nhat gia co ban"+ baseFare +" VND");
-//	        } else {
-//	            System.out.println("Gia co ban phai > 0.");
-//	        }
-//		return baseFare;
-//	}
 
 	// Cap nhat gia moi tram
 	public void updateDiscounts(Map<PassengerType, Double> ratesMap) {
@@ -212,7 +194,27 @@ public class FareConfig {
 			System.out.println("Gia co ban phai > 0.");
 		}
 	}
-
+	  public void setFarePerStop(double farePerStop) {
+	        if (farePerStop > 0) {
+	            this.farePerStop = farePerStop;
+	            System.out.println("Gia moi tram cap nhat: " + farePerStop + " VND");
+	        } else {
+	            System.out.println("Gia moi tram phai > 0.");
+	        }
+	    }
+	  public void setMaxFare(double maxFare) {
+	        if (maxFare > 0) {
+	            this.maxFare = maxFare;
+	        }
+	    }
+	  public void setFixedPriceMonthly(double fixedPriceMonthly) {
+	        if (fixedPriceMonthly > 0) {
+	            this.fixedPriceMonthly = fixedPriceMonthly;
+	            System.out.println("Gia ve thang cap nhat: " + fixedPriceMonthly + " VND");
+	        } else {
+	            System.out.println("Gia ve thang phai > 0");
+	        }
+	    }
 	public static void main(String[] args) {
 		System.out.println("========================================");
 		System.out.println("    KIEM TRA CLASS FARECONFIG");
