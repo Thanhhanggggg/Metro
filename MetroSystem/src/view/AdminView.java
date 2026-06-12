@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.Map.Entry;
 
 public class AdminView {
 
@@ -482,7 +483,7 @@ public class AdminView {
         SwingUtilities.invokeLater(() -> stationTableModel.setRowCount(0));
     }
 
-    public void showRevenueReport(Map<TicketType, Integer> report) {
+    public void showRevenueReport(Map<TicketType, Double> report) {
         SwingUtilities.invokeLater(() -> {
             if (report == null || report.isEmpty()) {
                 taReport.setText("Khong co du lieu doanh thu.");
@@ -490,11 +491,16 @@ public class AdminView {
             }
             StringBuilder sb = new StringBuilder();
             sb.append("===== BAO CAO DOANH THU =====\n");
-            sb.append(String.format("%-20s | %s\n", "Loai ve", "So luong"));
-            sb.append("-------------------------------\n");
-            report.forEach((type, count) ->
-                sb.append(String.format("%-20s | %d\n", type, count)));
-            sb.append("===============================\n");
+            sb.append(String.format("%-20s | %s\n", "Loai ve", "Doanh thu (VND)"));
+            sb.append("--------------------------------\n");
+            double total = 0;
+            for (Map.Entry<TicketType, Double> entry : report.entrySet()) {
+                sb.append(String.format("%-20s | %,.0f\n", entry.getKey(), entry.getValue()));
+                total += entry.getValue();
+            }
+            sb.append("--------------------------------\n");
+            sb.append(String.format("%-20s | %,.0f\n", "TONG CONG", total));
+            sb.append("================================\n");
             taReport.setText(sb.toString());
         });
     }
