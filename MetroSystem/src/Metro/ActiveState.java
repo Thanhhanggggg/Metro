@@ -21,4 +21,16 @@ public class ActiveState implements TicketState {
 		return true;
 	}
 
+	@Override
+	public boolean canPass(GateType gateType) {
+		// TODO Auto-generated method stub
+		return gateType == GateType.IN;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return "Vé chưa check-in";
+	}
+
 }

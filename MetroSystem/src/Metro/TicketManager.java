@@ -76,4 +76,14 @@ public class TicketManager {
             System.out.println("Refund confirmed for ticket: "+ ticket.getTicketId());
         }
     }
+    public void saveTicket(Ticket ticket) {
+
+        if(ticket != null) {
+
+            tickets.put(
+                ticket.getTicketId(),
+                ticket
+            );
+        }
+    }
 }

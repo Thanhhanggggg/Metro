@@ -22,8 +22,7 @@ public class SmartGate {
             System.out.println("Ticket not found!");
             return false;
         }
-
-        return ticket.getState().isValid();
+        return ticket.canPass(type);
     }
 
     public void scanQRCode(String ticketId) {

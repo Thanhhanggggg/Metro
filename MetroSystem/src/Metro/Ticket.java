@@ -105,6 +105,9 @@ public abstract class Ticket {
 		// TODO Auto-generated method stub
 		return status == TicketStatus.ACTIVE;
 	}
+	public boolean canPass(GateType gateType) {
+	    return state.canPass(gateType);
+	}
 	@Override
 	 public String toString() {
         return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";

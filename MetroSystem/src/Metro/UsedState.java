@@ -20,5 +20,17 @@ public class UsedState implements TicketState{
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public boolean canPass(GateType gateType) {
+		// TODO Auto-generated method stub
+		return gateType == GateType.OUT;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return "Vé đã check-in, chờ check-out";
+	}
 	
 }

@@ -20,4 +20,16 @@ public class ExpiredState implements TicketState {
 		return false;
 	}
 
+	@Override
+	public boolean canPass(GateType gateType) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return "Vé đã hết hạn";
+	}
+
 }
