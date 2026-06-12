@@ -188,6 +188,19 @@ public class MetroLine {
 		//Gia tri tuyet doi du co doi chieu 
 		return Math.abs(index2- index1 );
 	}
+	public boolean removeStation(Station station) {
+	    if (station == null) {
+	        System.out.println("Station khong hop le (null).");
+	        return false;
+	    }
+	    if (!stations.contains(station)) {
+	        System.out.println("Ga " + station.getStationName() + " khong ton tai trong tuyen " + lineName + ".");
+	        return false;
+	    }
+	    stations.remove(station);
+	    System.out.println("Da xoa ga " + station.getStationName() + " khoi tuyen " + lineName + ".");
+	    return true;
+	}
 
 //		//
 //	 public static MetroLine findLineById(String lineId) {
