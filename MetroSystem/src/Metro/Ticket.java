@@ -95,6 +95,7 @@ public abstract class Ticket {
             return 0.0;
         }
         double amount = refundPolicy.getRefundAmount(this);
+		setStatus(TicketStatus.REFUNDED);
         setState(new RefundedState());
         System.out.println("Hoan ve thanh cong! So tien hoan: " + amount + " VND");
         System.out.println("Ly do: " + refundPolicy.getRefundReason(this));
@@ -102,6 +103,10 @@ public abstract class Ticket {
     }
 	public boolean isActive() {
 		// TODO Auto-generated method stub
-		return false;
+		return status == TicketStatus.ACTIVE;
 	}
+	@Override
+	 public String toString() {
+        return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";
+    }
 }
