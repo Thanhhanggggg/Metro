@@ -2,7 +2,7 @@ package Metro;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StationStaff extends Employee implements Observer {
+public class StationStaff extends Employee {
     private Station station;
     private boolean onDuty;
     private List<HeatmapAlert> observerState;
@@ -13,15 +13,7 @@ public class StationStaff extends Employee implements Observer {
         this.observerState = new ArrayList<>();
     }
 
-    @Override
-    public void update() {
-        if (onDuty) {
-            HeatmapAlert alert = HeatmapService.getInstance().getLatestAlert();
-            if (alert != null) {
-                receiveAlert(alert);
-            }
-        }
-    }
+    
 
     public void receiveAlert(HeatmapAlert alert) {
         // Luu canh bao vao danh sach cua nhan vien
