@@ -1,254 +1,587 @@
-package controller;
+package view;
 
+import controller.IController;
 import Metro.*;
-import view.AdminView;
+import javax.swing.*;
+import javax.swing.border.*;
+import javax.swing.table.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
 
-public class AdminController implements IController {
+public class AdminView {
 
-	private final Admin admin;
-	private final AdminView view;
+    private IController controller;
 
-	// Du lieu tuyen / ga luu trong bo nho (demo)
-	private final List<MetroLine> metroLines = new ArrayList<>();
+    // --- Mau sac ---
+    private static final Color BLUE        = new Color(25, 80, 160);
+    private static final Color BLUE_LIGHT  = new Color(60, 120, 210);
+    private static final Color BG          = new Color(245, 247, 250);
+    private static final Color WHITE       = Color.WHITE;
+    private static final Color GREEN       = new Color(0, 130, 0);
+    private static final Color RED_DARK    = new Color(180, 0, 0);
 
-	public AdminController(Admin admin, AdminView view) {
-		this.admin = admin;
-		this.view = view;
-		seedData();
-	}
+    // --- Frame chinh ---
+    private JFrame     frame;
+    private JTabbedPane tabbedPane;
 
-	// Tao du lieu mau ban dau
-	private void seedData() {
-		MetroLine l1 = new MetroLine("L1", "Ben Thanh - Suoi Tien");
-		Station s1 = new Station("S01", "Ben Thanh", l1, 500);
-		Station s2 = new Station("S02", "Ba Son", l1, 400);
-		Station s3 = new Station("S03", "Van Thanh", l1, 350);
-		l1.addStation(s1);
-		l1.addStation(s2);
-		l1.addStation(s3);
+    // =========================================================
+    // Tab 1: Quan ly Tuyen & Ga
+    // =========================================================
+    // Panel tuyen
+    private DefaultTableModel lineTableModel;
+    private JTable            lineTable;
+    private MetroLine         selectedLine;
 
-		MetroLine l2 = new MetroLine("L2", "Ben Thanh - Tham Luong");
-		Station s4 = new Station("S11", "Ben Thanh", l2, 500);
-		Station s5 = new Station("S12", "Pham Van Hai", l2, 300);
-		l2.addStation(s4);
-		l2.addStation(s5);
+    private JTextField txtLineName;
+    private JComboBox<LineStatus> cbLineStatus;
+    private JButton   btnAddLine, btnUpdateLine, btnRemoveLine;
 
-		metroLines.add(l1);
-		metroLines.add(l2);
-		admin.registerLine(l1);
-		admin.registerLine(l2);
-	}
+    // Panel ga
+    private DefaultTableModel stationTableModel;
+    private JTable            stationTable;
+    private Station           selectedStation;
 
-	public List<MetroLine> getMetroLines() {
-		return Collections.unmodifiableList(metroLines);
-	}
+    private JTextField txtStationName;
+    private JTextField txtStationCapacity;
+    private JButton    btnAddStation, btnUpdateStation, btnRemoveStation;
 
-	// -------------------------------------------------------
-	@Override
-	public void handleAction(String action, Object... params) {
-		switch (action) {
-		case "LOAD_LINES" -> view.loadLines(metroLines);
-		case "SELECT_LINE" -> handleSelectLine((MetroLine) params[0]);
-		case "ADD_LINE" -> handleAddLine((String) params[0]);
-		case "UPDATE_LINE" -> handleUpdateLine((MetroLine) params[0], (String) params[1], (LineStatus) params[2]);
-		case "REMOVE_LINE" -> handleRemoveLine((MetroLine) params[0]);
-		case "ADD_STATION" -> handleAddStation((String) params[0], (MetroLine) params[1], (int) params[2]);
-		case "UPDATE_STATION" -> handleUpdateStation((Station) params[0], (String) params[1], (int) params[2]);
-		case "REMOVE_STATION" -> handleRemoveStation((Station) params[0], (MetroLine) params[1]);
-		case "SET_FARE" -> handleSetFare((double) params[0], (double) params[1]);
-		case "UPDATE_DISCOUNTS" -> handleUpdateDiscounts((Map<PassengerType, Double>) params[0]);
-		case "REVENUE_REPORT" -> handleRevenueReport((String) params[0]);
-		case "HEATMAP_REPORT" -> handleHeatmapReport();
-		default -> view.showError("Hanh dong khong hop le: " + action);
-		}
-	}
+    // =========================================================
+    // Tab 2: Cau hinh Gia ve
+    // =========================================================
+    private JTextField txtBaseFare, txtPerStop;
+    private JTextField txtNormalRate, txtStudentRate, txtSeniorRate, txtDisableRate;
+    private JButton    btnSetFare, btnUpdateDiscounts;
+    private JLabel     lblFareResult;
 
-	@Override
-	public boolean validate(Object input) {
-		if (input == null)
-			return false;
-		if (input instanceof String s)
-			return !s.isBlank();
-		return true;
-	}
+    // =========================================================
+    // Tab 3: Bao cao
+    // =========================================================
+    private JTextField txtDateRange;
+    private JButton    btnRevenue, btnHeatmap;
+    private JTextArea  taReport;
 
-	// Chon tuyen -> hien thi danh sach ga
-	private void handleSelectLine(MetroLine line) {
-		if (line == null)
-			return;
-		view.loadStations(line.getStations(), line);
-	}
+    // =========================================================
+    public AdminView() {
+        buildUI();
+    }
 
-	// Them tuyen moi
-	private void handleAddLine(String name) {
-		if (!validate(name)) {
-			view.showError("Ten tuyen khong duoc trong!");
-			return;
-		}
-		String trimmedName = name.trim();
-		for (MetroLine line : metroLines) {
-			if (line.getLineName().equalsIgnoreCase(trimmedName)) {
-				view.showError("Tuyen '" + trimmedName + "' da ton tai trong he thong!");
-				return;
-			}
-		}
-		String id = "L" + (metroLines.size() + 1);
-		MetroLine newLine = new MetroLine(id, name.trim());
-		metroLines.add(newLine);
-		admin.registerLine(newLine);
-		view.loadLines(metroLines);
-		view.showInfo("Da them tuyen: " + name);
-	}
+    public void setController(IController ctrl) {
+        this.controller = ctrl;
+        if (ctrl != null) ctrl.handleAction("LOAD_LINES");
+    }
 
-	// Cap nhat tuyen
-	private void handleUpdateLine(MetroLine line, String newName, LineStatus status) {
-		if (line == null) {
-			view.showError("Chua chon tuyen!");
-			return;
-		}
-		admin.updateLine(line, validate(newName) ? newName : null, status);
-		view.loadLines(metroLines);
-		view.showInfo("Cap nhat tuyen thanh cong.");
-	}
+    // =========================================================
+    // Xay dung giao dien chinh
+    // =========================================================
+    private void buildUI() {
+        frame = new JFrame("He Thong Quan Ly Metro - Admin");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(860, 600);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
 
-	// Xoa tuyen
-	private void handleRemoveLine(MetroLine line) {
-		if (line == null) {
-			view.showError("Chua chon tuyen!");
-			return;
-		}
-		boolean ok = admin.removeMetroLine(line);
-		if (ok) {
-			metroLines.remove(line);
-			view.loadLines(metroLines);
-			view.clearStations();
-			view.showInfo("Da xoa tuyen: " + line.getLineName());
-		} else {
-			view.showError("Khong the xoa tuyen nay.");
-		}
-	}
+        // Header
+        JPanel header = new JPanel();
+        header.setBackground(BLUE);
+        header.setBorder(new EmptyBorder(14, 24, 14, 24));
+        JLabel title = new JLabel("HE THONG QUAN LY METRO - ADMIN");
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setForeground(WHITE);
+        header.add(title);
+        frame.add(header, BorderLayout.NORTH);
 
-	// Them ga vao tuyen dang chon
-	private void handleAddStation(String name, MetroLine line, int capacity) {
-		if (!validate(name)) {
-			view.showError("Ten ga khong duoc trong!");
-			return;
-		}
-		if (line == null) {
-			view.showError("Chua chon tuyen!");
-			return;
-		}
-		if (capacity <= 0) {
-			view.showError("Suc chua phai > 0!");
-			return;
-		}
-		String trimmedName = name.trim();
-		for (Station s : line.getStations()) {
-			if (s.getStationName().equalsIgnoreCase(trimmedName)) {
-				view.showError("Ga '" + trimmedName + "' da ton tai trong tuyen nay!");
-				return;
-			}
-		}
-		admin.addStation(name.trim(), line, capacity);
-		view.loadStations(line.getStations(), line);
-		view.showInfo("Da them ga: " + name);
-	}
+        // Tabs
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Arial", Font.PLAIN, 13));
+        tabbedPane.addTab("Quan ly Tuyen & Ga", buildTabLineStation());
+        tabbedPane.addTab("Cau hinh Gia ve",    buildTabFare());
+        tabbedPane.addTab("Bao cao",             buildTabReport());
+        frame.add(tabbedPane, BorderLayout.CENTER);
+    }
 
-	// Cap nhat ga (ten + suc chua)
-	private void handleUpdateStation(Station station, String newName, int newCapacity) {
-		if (station == null) {
-			view.showError("Chua chon ga!");
-			return;
-		}
-		if (!validate(newName)) {
-			view.showError("Ten ga khong duoc trong!");
-			return;
-		}
-		if (newCapacity <= 0) {
-			view.showError("Suc chua phai > 0!");
-			return;
-		}
-		station.setStationName(newName.trim());
-		station.setCapacity(newCapacity);
-		// Refresh hien thi
-		MetroLine ownerLine = findLineOf(station);
-		if (ownerLine != null)
-			view.loadStations(ownerLine.getStations(), ownerLine);
-		view.showInfo("Cap nhat ga thanh cong.");
-	}
+    // =========================================================
+    // Tab 1: Quan ly Tuyen & Ga
+    // =========================================================
+    private JPanel buildTabLineStation() {
+        JPanel outer = new JPanel(new GridLayout(1, 2, 10, 0));
+        outer.setBackground(BG);
+        outer.setBorder(new EmptyBorder(12, 12, 12, 12));
+        outer.add(buildLinePanel());
+        outer.add(buildStationPanel());
+        return outer;
+    }
 
-	// Xoa ga
-	private void handleRemoveStation(Station station, MetroLine line) {
-		if (station == null) {
-			view.showError("Chua chon ga!");
-			return;
-		}
-		if (line == null) {
-			view.showError("Chua chon tuyen!");
-			return;
-		}
-		boolean ok = admin.removeStation(station, line);
-		if (ok) {
-			view.loadStations(line.getStations(), line);
-			view.showInfo("Da xoa ga: " + station.getStationName());
-		} else {
-			view.showError("Khong the xoa ga nay.");
-		}
-	}
+    // --- Panel trai: Danh sach tuyen ---
+    private JPanel buildLinePanel() {
+        JPanel p = new JPanel(new BorderLayout(0, 8));
+        p.setBackground(BG);
+        p.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(BLUE, 1), "Danh sach Tuyen",
+            TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.BOLD, 13), BLUE));
 
-	// Cau hinh gia ve
-	private void handleSetFare(double base, double perStop) {
-		if (base <= 0 || perStop <= 0) {
-			view.showError("Gia phai > 0!");
-			return;
-		}
-		admin.setFareDetail(base, perStop);
-		FareConfig cfg = FareConfig.getInstance();
-		view.showInfo(String.format("Cap nhat gia: Co ban=%.0f VND | Moi tram=%.0f VND", cfg.getBaseFare(),
-				cfg.getFarePerStop()));
-	}
+        // Bang tuyen: STT | Ma tuyen | Ten tuyen | Trang thai
+        lineTableModel = new DefaultTableModel(
+            new String[]{"STT", "Ma tuyen", "Ten tuyen", "Trang thai"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        lineTable = new JTable(lineTableModel);
+        styleTable(lineTable);
+        lineTable.getColumnModel().getColumn(0).setPreferredWidth(35);
+        lineTable.getColumnModel().getColumn(1).setPreferredWidth(70);
+        lineTable.getColumnModel().getColumn(2).setPreferredWidth(170);
+        lineTable.getColumnModel().getColumn(3).setPreferredWidth(80);
 
-	// Cap nhat bang chiet khau
-	private void handleUpdateDiscounts(Map<PassengerType, Double> map) {
-		if (map == null || map.isEmpty()) {
-			view.showError("Bang chiet khau trong!");
-			return;
-		}
-		try {
-			admin.updateDiscounts(map);
-			view.showInfo("Cap nhat chiet khau thanh cong.");
-		} catch (IllegalArgumentException e) {
-			view.showError("He so chiet khau khong hop le (0.0 - 1.0).");
-		}
-	}
+        // Click chon tuyen
+        lineTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) onLineSelected();
+        });
 
-	// Bao cao doanh thu
-	private void handleRevenueReport(String dateRange) {
-	    if (!validate(dateRange)) {
-	        view.showError("Vui long nhap khoang thoi gian!");
-	        return;
-	    }
-	    Map<TicketType, Double> report = admin.requestRevenueReport(dateRange);
-	    view.showRevenueReport(report);
-	}
-	// Bao cao heatmap
-	private void handleHeatmapReport() {
-		var report = admin.requestHeatmapReport();
-		view.showHeatmapReport(report);
-	}
+        p.add(new JScrollPane(lineTable), BorderLayout.CENTER);
 
-	// Tim tuyen chua ga
-	private MetroLine findLineOf(Station station) {
-		for (MetroLine ml : metroLines) {
-			if (ml.getStations().contains(station))
-				return ml;
-		}
-		return null;
-	}
+        // Form nhap
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(BG);
+        form.setBorder(new EmptyBorder(6, 4, 4, 4));
 
-	public void registerLine(MetroLine line1) {
-		// TODO Auto-generated method stub
+        txtLineName = styledTextField();
+        cbLineStatus = new JComboBox<>(LineStatus.values());
+        cbLineStatus.setMaximumSize(new Dimension(9999, 30));
+        cbLineStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-	}
+        btnAddLine    = styledButton("Them tuyen", GREEN);
+        btnUpdateLine = styledButton("Cap nhat",   BLUE);
+        btnRemoveLine = styledButton("Xoa tuyen",  RED_DARK);
+
+        btnAddLine.addActionListener(e ->
+            controller.handleAction("ADD_LINE", txtLineName.getText()));
+
+        btnUpdateLine.addActionListener(e ->
+            controller.handleAction("UPDATE_LINE", selectedLine,
+                txtLineName.getText(), (LineStatus) cbLineStatus.getSelectedItem()));
+
+        btnRemoveLine.addActionListener(e -> {
+            if (selectedLine == null) { showError("Chua chon tuyen!"); return; }
+            int c = JOptionPane.showConfirmDialog(frame,
+                "Xac nhan xoa tuyen: " + selectedLine.getLineName() + "?",
+                "Xac nhan", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION)
+                controller.handleAction("REMOVE_LINE", selectedLine);
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        btnRow.setBackground(BG);
+        btnRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnRow.add(btnAddLine);
+        btnRow.add(btnUpdateLine);
+        btnRow.add(btnRemoveLine);
+
+        form.add(styledLabel("Ten tuyen:"));
+        form.add(Box.createVerticalStrut(3));
+        form.add(txtLineName);
+        form.add(Box.createVerticalStrut(6));
+        form.add(styledLabel("Trang thai:"));
+        form.add(Box.createVerticalStrut(3));
+        form.add(cbLineStatus);
+        form.add(Box.createVerticalStrut(8));
+        form.add(btnRow);
+
+        p.add(form, BorderLayout.SOUTH);
+        return p;
+    }
+
+    // --- Panel phai: Danh sach ga ---
+    private JPanel buildStationPanel() {
+        JPanel p = new JPanel(new BorderLayout(0, 8));
+        p.setBackground(BG);
+        p.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(BLUE, 1), "Danh sach Ga (theo tuyen da chon)",
+            TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.BOLD, 13), BLUE));
+
+        // Bang ga: STT | Ma ga | Ten ga | Suc chua | Ty le
+        stationTableModel = new DefaultTableModel(
+            new String[]{"STT", "Ma ga", "Ten ga", "Suc chua", "Hien tai"}, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        stationTable = new JTable(stationTableModel);
+        styleTable(stationTable);
+        stationTable.getColumnModel().getColumn(0).setPreferredWidth(35);
+        stationTable.getColumnModel().getColumn(1).setPreferredWidth(60);
+        stationTable.getColumnModel().getColumn(2).setPreferredWidth(140);
+        stationTable.getColumnModel().getColumn(3).setPreferredWidth(65);
+        stationTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+
+        // Click chon ga -> dien vao form
+        stationTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) onStationSelected();
+        });
+
+        p.add(new JScrollPane(stationTable), BorderLayout.CENTER);
+
+        // Form nhap ga
+        JPanel form = new JPanel();
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBackground(BG);
+        form.setBorder(new EmptyBorder(6, 4, 4, 4));
+
+        txtStationName     = styledTextField();
+        txtStationCapacity = styledTextField();
+
+        btnAddStation    = styledButton("Them ga",   GREEN);
+        btnUpdateStation = styledButton("Cap nhat",  BLUE);
+        btnRemoveStation = styledButton("Xoa ga",    RED_DARK);
+
+        btnAddStation.addActionListener(e -> {
+            int cap = parseCapacity(txtStationCapacity.getText());
+            controller.handleAction("ADD_STATION",
+                txtStationName.getText(), selectedLine, cap);
+        });
+
+        btnUpdateStation.addActionListener(e -> {
+            if (selectedStation == null) { showError("Chua chon ga!"); return; }
+            int cap = parseCapacity(txtStationCapacity.getText());
+            controller.handleAction("UPDATE_STATION",
+                selectedStation, txtStationName.getText(), cap);
+        });
+
+        btnRemoveStation.addActionListener(e -> {
+            if (selectedStation == null) { showError("Chua chon ga!"); return; }
+            int c = JOptionPane.showConfirmDialog(frame,
+                "Xac nhan xoa ga: " + selectedStation.getStationName() + "?",
+                "Xac nhan", JOptionPane.YES_NO_OPTION);
+            if (c == JOptionPane.YES_OPTION)
+                controller.handleAction("REMOVE_STATION", selectedStation, selectedLine);
+        });
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        btnRow.setBackground(BG);
+        btnRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnRow.add(btnAddStation);
+        btnRow.add(btnUpdateStation);
+        btnRow.add(btnRemoveStation);
+
+        form.add(styledLabel("Ten ga:"));
+        form.add(Box.createVerticalStrut(3));
+        form.add(txtStationName);
+        form.add(Box.createVerticalStrut(6));
+        form.add(styledLabel("Suc chua:"));
+        form.add(Box.createVerticalStrut(3));
+        form.add(txtStationCapacity);
+        form.add(Box.createVerticalStrut(8));
+        form.add(btnRow);
+
+        p.add(form, BorderLayout.SOUTH);
+        return p;
+    }
+
+    // =========================================================
+    // Tab 2: Cau hinh gia ve
+    // =========================================================
+    private JPanel buildTabFare() {
+        JPanel outer = new JPanel();
+        outer.setLayout(new BoxLayout(outer, BoxLayout.Y_AXIS));
+        outer.setBackground(BG);
+        outer.setBorder(new EmptyBorder(20, 40, 20, 40));
+
+        // --- Gia co ban ---
+        JPanel farePanel = new JPanel(new GridLayout(0, 2, 10, 6));
+        farePanel.setBackground(BG);
+        farePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        farePanel.setMaximumSize(new Dimension(480, 999));
+        farePanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(BLUE, 1), "Gia ve co ban",
+            TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.BOLD, 13), BLUE));
+
+        txtBaseFare = styledTextField();
+        txtPerStop  = styledTextField();
+        btnSetFare  = styledButton("Cap nhat gia", BLUE);
+        lblFareResult = new JLabel(" ");
+        lblFareResult.setFont(new Font("Arial", Font.BOLD, 12));
+
+        // Pre-fill
+        FareConfig cfg = FareConfig.getInstance();
+        txtBaseFare.setText(String.valueOf((int) cfg.getBaseFare()));
+        txtPerStop.setText(String.valueOf((int) cfg.getFarePerStop()));
+
+        btnSetFare.addActionListener(e -> {
+            try {
+                double base    = Double.parseDouble(txtBaseFare.getText().trim());
+                double perStop = Double.parseDouble(txtPerStop.getText().trim());
+                controller.handleAction("SET_FARE", base, perStop);
+            } catch (NumberFormatException ex) {
+                showError("Gia phai la so hop le!");
+            }
+        });
+
+        farePanel.add(styledLabel("Gia co ban (VND):"));
+        farePanel.add(txtBaseFare);
+        farePanel.add(styledLabel("Gia moi tram (VND):"));
+        farePanel.add(txtPerStop);
+        farePanel.add(btnSetFare);
+        farePanel.add(lblFareResult);
+
+        // --- Bang chiet khau ---
+        JPanel discPanel = new JPanel(new GridLayout(0, 2, 10, 6));
+        discPanel.setBackground(BG);
+        discPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        discPanel.setMaximumSize(new Dimension(480, 999));
+        discPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(BLUE, 1), "He so chiet khau (0.0 - 1.0)",
+            TitledBorder.LEFT, TitledBorder.TOP, new Font("Arial", Font.BOLD, 13), BLUE));
+
+        txtNormalRate  = styledTextField(); txtNormalRate.setText("1.0");
+        txtStudentRate = styledTextField(); txtStudentRate.setText("0.7");
+        txtSeniorRate  = styledTextField(); txtSeniorRate.setText("0.5");
+        txtDisableRate = styledTextField(); txtDisableRate.setText("0.0");
+        btnUpdateDiscounts = styledButton("Cap nhat chiet khau", BLUE);
+
+        btnUpdateDiscounts.addActionListener(e -> {
+            try {
+                Map<PassengerType, Double> map = new HashMap<>();
+                map.put(PassengerType.NORMAL,  Double.parseDouble(txtNormalRate.getText().trim()));
+                map.put(PassengerType.STUDENT, Double.parseDouble(txtStudentRate.getText().trim()));
+                map.put(PassengerType.SENIOR,  Double.parseDouble(txtSeniorRate.getText().trim()));
+                map.put(PassengerType.DISABLE, Double.parseDouble(txtDisableRate.getText().trim()));
+                controller.handleAction("UPDATE_DISCOUNTS", map);
+            } catch (NumberFormatException ex) {
+                showError("He so phai la so hop le!");
+            }
+        });
+
+        discPanel.add(styledLabel("Khach thuong (NORMAL):"));
+        discPanel.add(txtNormalRate);
+        discPanel.add(styledLabel("Sinh vien (STUDENT):"));
+        discPanel.add(txtStudentRate);
+        discPanel.add(styledLabel("Nguoi cao tuoi (SENIOR):"));
+        discPanel.add(txtSeniorRate);
+        discPanel.add(styledLabel("Nguoi khuyet tat (DISABLE):"));
+        discPanel.add(txtDisableRate);
+        discPanel.add(btnUpdateDiscounts);
+        discPanel.add(new JLabel());
+
+        outer.add(farePanel);
+        outer.add(Box.createVerticalStrut(16));
+        outer.add(discPanel);
+        return outer;
+    }
+
+    // =========================================================
+    // Tab 3: Bao cao
+    // =========================================================
+    private JPanel buildTabReport() {
+        JPanel p = new JPanel(new BorderLayout(0, 10));
+        p.setBackground(BG);
+        p.setBorder(new EmptyBorder(16, 30, 16, 30));
+
+        // Top toolbar
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        toolbar.setBackground(BG);
+        txtDateRange = styledTextField();
+        txtDateRange.setPreferredSize(new Dimension(150, 30));
+        txtDateRange.setText("2026-06");
+
+        btnRevenue = styledButton("Doanh thu theo loai ve", BLUE);
+        btnHeatmap = styledButton("Bao cao HeatMap",        new Color(100, 60, 160));
+
+        btnRevenue.addActionListener(e ->
+            controller.handleAction("REVENUE_REPORT", txtDateRange.getText()));
+        btnHeatmap.addActionListener(e ->
+            controller.handleAction("HEATMAP_REPORT"));
+
+        toolbar.add(styledLabel("Thoi gian:"));
+        toolbar.add(txtDateRange);
+        toolbar.add(btnRevenue);
+        toolbar.add(btnHeatmap);
+
+        taReport = new JTextArea();
+        taReport.setEditable(false);
+        taReport.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        taReport.setBackground(new Color(240, 244, 255));
+        taReport.setBorder(new EmptyBorder(8, 8, 8, 8));
+
+        p.add(toolbar,              BorderLayout.NORTH);
+        p.add(new JScrollPane(taReport), BorderLayout.CENTER);
+        return p;
+    }
+
+    // =========================================================
+    // Event handlers noi bo
+    // =========================================================
+    private void onLineSelected() {
+        int row = lineTable.getSelectedRow();
+        if (row < 0) { selectedLine = null; return; }
+
+        // Tim doi tuong MetroLine tu controller
+        String lineId = (String) lineTableModel.getValueAt(row, 1);
+        // Lay lai tu controller
+        if (controller instanceof controller.AdminController ac) {
+            selectedLine = ac.getMetroLines().stream()
+                .filter(l -> l.getLineId().equals(lineId))
+                .findFirst().orElse(null);
+        }
+        if (selectedLine != null) {
+            txtLineName.setText(selectedLine.getLineName());
+            cbLineStatus.setSelectedItem(selectedLine.getStatus());
+            controller.handleAction("SELECT_LINE", selectedLine);
+        }
+    }
+
+    private void onStationSelected() {
+        int row = stationTable.getSelectedRow();
+        if (row < 0) { selectedStation = null; return; }
+        if (selectedLine == null) return;
+
+        String stId = (String) stationTableModel.getValueAt(row, 1);
+        selectedStation = selectedLine.getStations().stream()
+            .filter(s -> s.getStationId().equals(stId))
+            .findFirst().orElse(null);
+
+        if (selectedStation != null) {
+            txtStationName.setText(selectedStation.getStationName());
+            txtStationCapacity.setText(String.valueOf(selectedStation.getCapacity()));
+        }
+    }
+
+    // =========================================================
+    // Public methods goi tu Controller
+    // =========================================================
+    public void loadLines(List<MetroLine> lines) {
+        SwingUtilities.invokeLater(() -> {
+            lineTableModel.setRowCount(0);
+            int i = 1;
+            for (MetroLine ml : lines) {
+                lineTableModel.addRow(new Object[]{
+                    i++,
+                    ml.getLineId(),
+                    ml.getLineName(),
+                    ml.getStatus()
+                });
+            }
+        });
+    }
+
+    public void loadStations(List<Station> stations, MetroLine ownerLine) {
+        SwingUtilities.invokeLater(() -> {
+            stationTableModel.setRowCount(0);
+            int i = 1;
+            for (Station s : stations) {
+                stationTableModel.addRow(new Object[]{
+                    i++,
+                    s.getStationId(),
+                    s.getStationName(),
+                    s.getCapacity(),
+                    s.getCheckInCount()
+                });
+            }
+        });
+    }
+
+    public void clearStations() {
+        SwingUtilities.invokeLater(() -> stationTableModel.setRowCount(0));
+    }
+
+    public void showRevenueReport(Map<TicketType, Double> report) {
+        SwingUtilities.invokeLater(() -> {
+            if (report == null || report.isEmpty()) {
+                taReport.setText("Khong co du lieu doanh thu.");
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("===== BAO CAO DOANH THU =====\n");
+            sb.append(String.format("%-20s | %s\n", "Loai ve", "Doanh thu (VND)"));
+            sb.append("--------------------------------\n");
+            double total = 0;
+            for (Map.Entry<TicketType, Double> entry : report.entrySet()) {
+                sb.append(String.format("%-20s | %,.0f\n", entry.getKey(), entry.getValue()));
+                total += entry.getValue();
+            }
+            sb.append("--------------------------------\n");
+            sb.append(String.format("%-20s | %,.0f\n", "TONG CONG", total));
+            sb.append("================================\n");
+            taReport.setText(sb.toString());
+        });
+    }
+
+    public void showHeatmapReport(List<HeatmapAlert> report) {
+        SwingUtilities.invokeLater(() -> {
+            if (report == null || report.isEmpty()) {
+                taReport.setText("Chua co canh bao HeatMap nao.");
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append("===== BAO CAO HEATMAP =====\n\n");
+            for (HeatmapAlert a : report) {
+                sb.append(a.toString()).append("\n");
+            }
+            sb.append("\nTong canh bao: ").append(report.size());
+            taReport.setText(sb.toString());
+        });
+    }
+
+    public void showError(String msg) {
+        SwingUtilities.invokeLater(() ->
+            JOptionPane.showMessageDialog(frame, msg, "Loi", JOptionPane.ERROR_MESSAGE));
+    }
+
+    public void showInfo(String msg) {
+        SwingUtilities.invokeLater(() ->
+            JOptionPane.showMessageDialog(frame, msg, "Thong bao", JOptionPane.INFORMATION_MESSAGE));
+    }
+
+    public void show() {
+        SwingUtilities.invokeLater(() -> frame.setVisible(true));
+    }
+
+    // =========================================================
+    // Helper
+    // =========================================================
+    private int parseCapacity(String s) {
+        try { return Integer.parseInt(s.trim()); }
+        catch (NumberFormatException e) { return -1; }
+    }
+
+    private void styleTable(JTable table) {
+        table.setFont(new Font("Arial", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.getTableHeader().setBackground(BLUE);
+        table.getTableHeader().setForeground(WHITE);
+        table.setRowHeight(24);
+        table.setSelectionBackground(new Color(190, 210, 255));
+        table.setGridColor(new Color(210, 215, 225));
+        table.setShowGrid(true);
+    }
+
+    private JLabel styledLabel(String text) {
+        JLabel l = new JLabel(text);
+        l.setFont(new Font("Arial", Font.PLAIN, 12));
+        l.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return l;
+    }
+
+    private JTextField styledTextField() {
+        JTextField tf = new JTextField();
+        tf.setFont(new Font("Arial", Font.PLAIN, 12));
+        tf.setMaximumSize(new Dimension(9999, 30));
+        tf.setAlignmentX(Component.LEFT_ALIGNMENT);
+        return tf;
+    }
+
+    private JButton styledButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Arial", Font.BOLD, 12));
+        btn.setBackground(bg);
+        btn.setForeground(WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorder(new EmptyBorder(6, 14, 6, 14));
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        Color lighter = bg.brighter();
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btn.setBackground(lighter); }
+            public void mouseExited (MouseEvent e) { btn.setBackground(bg); }
+        });
+        return btn;
+    }
 }
