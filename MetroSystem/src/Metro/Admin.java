@@ -27,6 +27,7 @@ public class Admin extends Employee {
 		FareConfig fareConfig = FareConfig.getInstance();
 		fareConfig.setBaseFare(base);
 		fareConfig.setFarePerStop(perStop);
+		
 		System.out.println("Cap nhat bieu gia");
 		System.out.println("Gia co ban: " + base + "VND");
 		System.out.println("Gia /tram: " + perStop + "VND");
@@ -136,20 +137,16 @@ public class Admin extends Employee {
 		System.out.println("cap nhat thanh cong: " + metroLine);
 	}
 
-	public Map<TicketType, Integer> requestRevenueReport(String dateRange) {
-		if (dateRange == null || dateRange.trim().isEmpty()) {
-			System.out.println("Khoang thoi gian khong hop le.");
-			return null;
-		}
-
-		System.out.println("Tong hop bao cao doanh thu " + dateRange);
-		// Goi TicketManager Singleton de lay bao cao
-		Map<TicketType, Integer> report = TicketManager.getInstance().getRevenueReport(dateRange);
-
-		System.out.println("Bao cao doanh thu: " + report);
-		return report;
+	public Map<TicketType, Double> requestRevenueReport(String dateRange) {
+	    if (dateRange == null || dateRange.trim().isEmpty()) {
+	        System.out.println("Khoang thoi gian khong hop le.");
+	        return null;
+	    }
+	    System.out.println("Tong hop bao cao doanh thu " + dateRange);
+	    Map<TicketType, Double> report = TicketManager.getInstance().getRevenueReport(dateRange);
+	    System.out.println("Bao cao doanh thu: " + report);
+	    return report;
 	}
-
 	// Yeu cau xem bao cao mat do heatmap
 	public List<HeatmapAlert> requestHeatmapReport() {
 		// Goi HeatmapService Singleton de lay du lieu
@@ -376,16 +373,16 @@ public class Admin extends Employee {
         System.err.println("\n--- NHOM 6: KIEM TRA requestRevenueReport() ---");
  
         // dateRange hop le -> tra ve map co du lieu
-        Map<TicketType, Integer> baocao = admin.requestRevenueReport("2025-01");
+        Map<TicketType, Double> baocao = admin.requestRevenueReport("2025-01");
         System.out.println("[dateRange hop le] != null : " + (baocao != null));
         System.out.println("[dateRange hop le] co it nhat 1  : " + (baocao != null && baocao.size() >= 1));
  
         // dateRange null -> tra ve null
-        Map<TicketType, Integer> bcNull = admin.requestRevenueReport(null);
+        Map<TicketType, Double> bcNull = admin.requestRevenueReport(null);
         System.out.println("[dateRange null]   tra ve null   : " + (bcNull == null));
  
         // dateRange rong -> tra ve null
-        Map<TicketType, Integer> bcRong = admin.requestRevenueReport("   ");
+        Map<TicketType, Double> bcRong = admin.requestRevenueReport("   ");
         System.out.println("[dateRange rong]   tra ve null   : " + (bcRong == null));
  
         // ------------------------------------------------
