@@ -33,19 +33,9 @@ public class PassengerView extends JPanel {
     // TAB 3
     private JButton btnRefreshTickets;
     private JTextArea taTickets;
-    // TAB 4
-    private JTextField txtTicketId;
-    private JButton btnCheckIn;
-    private JLabel lblCheckIn;
-    // Tab Check Out
-    private JTextField txtCheckOutTicketId;
-    private JButton btnCheckOut;
-
     // Tab Hủy vé
     private JTextField txtCancelTicketId;
     private JButton btnCancelTicket;
-
-	private JLabel lblCheckOut;
     public PassengerView() {
         buildUI();
     }
@@ -67,10 +57,8 @@ public class PassengerView extends JPanel {
 
         tabbedPane.addTab("Mua vé", buildBuyTicketTab());
         tabbedPane.addTab("Vé của tôi", buildMyTicketTab());
-        tabbedPane.addTab("Check-In", buildCheckInTab());
         add(tabbedPane, BorderLayout.CENTER);
-       
-        tabbedPane.addTab("Check-Out", buildCheckOutTab());
+    
         tabbedPane.addTab("Hủy vé", buildCancelTicketTab());
     }
     private JPanel buildRouteTab() {
@@ -167,49 +155,7 @@ public class PassengerView extends JPanel {
         return p;
     }
 
-    private JPanel buildCheckInTab() {
-        JPanel p = createTabPanel();
-        txtTicketId = styledTextField();
-        btnCheckIn = styledButton("Check-In");
-        lblCheckIn = new JLabel(" ");
-        btnCheckIn.addActionListener(e -> {
-            if(controller != null) {
-                controller.handleAction("CHECK_IN", txtTicketId.getText().trim());
-            }
-        });
-
-        p.add(styledLabel("Nhập mã vé cần Check-In"));
-        p.add(Box.createVerticalStrut(8));
-        p.add(txtTicketId);
-        p.add(Box.createVerticalStrut(12));
-        p.add(btnCheckIn);
-        p.add(Box.createVerticalStrut(15));
-        p.add(lblCheckIn);
-
-        return p;
-    }
-    private JPanel buildCheckOutTab() {
-        JPanel panel = createTabPanel();
-        JLabel lblTitle = styledLabel("Nhập mã vé cần Check-Out");
-        lblCheckOut = new JLabel(" ");
-
-        txtCheckOutTicketId = styledTextField();
-        btnCheckOut = styledButton("Check-Out");
-        btnCheckOut.addActionListener(e -> {
-            if(controller != null) {
-                controller.handleAction("CHECK_OUT",txtCheckOutTicketId.getText().trim());
-            }
-        });
-        panel.add(lblTitle);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(txtCheckOutTicketId);
-        panel.add(Box.createVerticalStrut(12));
-        panel.add(btnCheckOut);
-        panel.add(Box.createVerticalStrut(15));
-        panel.add(lblCheckOut);
-
-        return panel;
-    }
+  
     private JPanel buildCancelTicketTab() {
         JPanel panel = createTabPanel();
         JLabel lblTitle = styledLabel("Nhập mã vé cần hủy");
@@ -316,11 +262,5 @@ public class PassengerView extends JPanel {
     }
     public void showFareResult(String result) {
         taBuyResult.setText(result);
-    }
-    public void showCheckOutResult(String message) {
-        JOptionPane.showMessageDialog(this,message,"Check-Out",JOptionPane.INFORMATION_MESSAGE);
-    }
-    public void showCancelResult(String message) {
-        JOptionPane.showMessageDialog(this,message, "Hủy vé",JOptionPane.INFORMATION_MESSAGE);
     }
 }
