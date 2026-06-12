@@ -193,9 +193,6 @@ public class PassengerView extends JPanel {
             String msg) {
         taBuyResult.setText(msg);
     }
-    public void showCheckInResult(String message) {
-        JOptionPane.showMessageDialog(this,message,"Check-In",JOptionPane.INFORMATION_MESSAGE);
-    }
 
     public void showMyTickets(
             List<Ticket> tickets) {
