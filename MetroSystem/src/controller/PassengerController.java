@@ -33,12 +33,6 @@ public class PassengerController implements IController {
         case "VIEW_TICKETS":
             handleViewTickets();
             break;
-        // UC05 - Check-In vào ga
-        case "CHECK_IN": handleCheckIn((String) params[0]);
-            break;
-        //CHECK OUT
-        case "CHECK_OUT" : handleCheckOut((String) params[0]);
-            break;
         // UC06 - Hoàn vé
         case "REFUND":
             handleRefund((String) params[0]);
@@ -163,64 +157,7 @@ public class PassengerController implements IController {
         List<Ticket> tickets = passenger.getTickets();
         view.showMyTickets(tickets);
     }
-    // ==================================================
-    // UC05 - CHECK IN
-    // Chức năng:
-    // - Nhập mã vé
-    // - Kiểm tra trạng thái vé
-    // - Chuyển trạng thái Active -> Used
-    // ==================================================
-    private void handleCheckIn(String ticketId) {
-        if (!validate(ticketId)) {
-            view.showCheckInResult("Vui lòng nhập mã vé");
-            return;
-        }
-        Ticket ticket = TicketManager.getInstance().findById(ticketId);
-        if (ticket == null) {
-            view.showCheckInResult("Không tìm thấy vé");
-            return;
-        }
-        if (!ticket.isValid()) {
-            view.showCheckInResult("Vé không hợp lệ");
-            return;
-        }
-        TicketState before = ticket.getState();
-        ticket.checkIn();
-
-        TicketState after = ticket.getState();
-
-        if (before != after) {
-            view.showCheckInResult("Check-In thành công");
-        } else {
-            view.showCheckInResult("Không thể Check-In");
-        }
-    }
-    //CHECK OUT
-    private void handleCheckOut(String ticketId) {
-        if (!validate(ticketId)) {
-            view.showCheckInResult("Vui lòng nhập mã vé");
-            return;
-        }
-        Ticket ticket = TicketManager.getInstance().findById(ticketId);
-        if (ticket == null) {
-            view.showCheckOutResult("Không tìm thấy vé");
-            return;
-        }
-        if (!ticket.isValid()) {
-            view.showCheckOutResult("Vé không hợp lệ");
-            return;
-        }
-        TicketState before = ticket.getState();
-        ticket.checkOut();
-
-        TicketState after = ticket.getState();
-
-        if (before != after) {
-            view.showCheckOutResult("Check-Out thành công");
-        } else {
-            view.showCheckOutResult("Không thể Check-Out");
-        }
-    }
+   
     //HUỶ VÉ
         private void handleCancelTicket(String ticketId) {
         if (!validate(ticketId)) {view.showCancelResult("Vui lòng nhập mã vé");
