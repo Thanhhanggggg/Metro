@@ -1,8 +1,12 @@
-package Metro;
+package view;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
+
+import Metro.Observer;
+import controller.*;
+import Metro.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
@@ -10,66 +14,61 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StaffView implements Observer {
-	 private IController controller;
+public class StaffView extends JPanel implements Observer {
+    private IController controller;
 
-    private static final Color BLUE        = new Color(30, 90, 180);
-    private static final Color BLUE_LIGHT  = new Color(70, 130, 220);
-    private static final Color GREEN       = new Color(0, 140, 0);
-    private static final Color ORANGE      = new Color(200, 100, 0);
-    private static final Color RED_ALERT   = new Color(180, 30, 30);
-    private static final Color WHITE       = Color.WHITE;
-    private static final Color BG          = new Color(245, 247, 250);
-    private static final Color ROW_EVEN    = new Color(235, 242, 255);
 
-    private JFrame      frame;
+    private static final Color BLUE       = new Color(30, 90, 180);
+    private static final Color BLUE_LIGHT = new Color(70, 130, 220);
+    private static final Color GREEN      = new Color(0, 140, 0);
+    private static final Color WHITE      = Color.WHITE;
+    private static final Color BG         = new Color(245, 247, 250);
+    private static final Color ROW_EVEN   = new Color(235, 242, 255);
+
     private JTabbedPane tabbedPane;
 
-    // Tab kiem tra ve
+    //Tab 1 kiem tra ve
     private JTextField txtCheckTicketId;
     private JButton    btnCheckTicket;
     private JLabel     lblCheckResult;
 
-    // Tab hoan ve
+    //Tab 2 hoan ve
     private JTextField txtRefundTicketId;
     private JButton    btnRefund;
     private JTextArea  taRefundResult;
 
-    // Tab bao cao su co
-    private JTextField         txtGateId;
-    private JTextField         txtFaultDesc;
-    private JButton            btnReportFault;
-    private JLabel             lblFaultResult;
-    private DefaultTableModel  faultTableModel;   
+    // Tab 3 bao cao su co
+    private JTextField        txtGateId;
+    private JTextField        txtFaultDesc;
+    private JButton           btnReportFault;
+    private JLabel            lblFaultResult;
+    private DefaultTableModel faultTableModel;
     private static final String[] FAULT_COLS =
         { "#", "Gate ID", "Mô tả", "Thời gian", "Trạng thái" };
 
-    // Tab thong bao Heatmap
-    private DefaultTableModel  alertTableModel;   
+    // Tab 4 thong bao
+    private DefaultTableModel alertTableModel;
     private static final String[] ALERT_COLS =
         { "#", "Ga", "Mật độ", "Mức", "Thời gian", "Trạng thái" };
-    private JButton btnAckSelected;               // ← nút xác nhận
+    private JButton btnAckSelected;
     private JTable  alertTable;
 
     private final List<HeatmapAlert> alertList = new ArrayList<>();
     private int faultCount = 0;
     private int alertCount = 0;
 
-    public StaffView() { 
-		buildUI(); 
-	}
+    public StaffView() {
+        buildView();
+    }
 
     public void setController(IController controller) {
         this.controller = controller;
     }
 
-  //UI
-    private void buildUI() {
-        frame = new JFrame("Station Staff Management");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 560);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
+
+    private void buildView() {
+        setLayout(new BorderLayout());
+        setBackground(BG);
 
         // Header
         JPanel header = new JPanel();
@@ -79,8 +78,9 @@ public class StaffView implements Observer {
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(WHITE);
         header.add(title);
-        frame.add(header, BorderLayout.NORTH);
+        add(header, BorderLayout.NORTH);
 
+        // Tabs
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.PLAIN, 13));
         tabbedPane.setBackground(BG);
@@ -88,10 +88,10 @@ public class StaffView implements Observer {
         tabbedPane.addTab("Hoàn vé",        buildTabRefund());
         tabbedPane.addTab("Báo cáo sự cố",  buildTabFault());
         tabbedPane.addTab("Thông báo",       buildTabAlerts());
-        frame.add(tabbedPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
     }
 
-    //Tab kiem tra ve
+    //Tab 1
     private JPanel buildTabCheckTicket() {
         JPanel p = createTabPanel();
         txtCheckTicketId = styledTextField();
@@ -115,7 +115,7 @@ public class StaffView implements Observer {
         return p;
     }
 
-   //Tab hoan ve
+    //  TAB 2
     private JPanel buildTabRefund() {
         JPanel p = createTabPanel();
         txtRefundTicketId = styledTextField();
@@ -143,7 +143,7 @@ public class StaffView implements Observer {
         return p;
     }
 
-    //Tab bao cao su co
+    //  TAB 3 
     private JComponent buildTabFault() {
         JPanel formPanel = createTabPanel();
         formPanel.setBorder(new EmptyBorder(16, 30, 12, 30));
@@ -190,7 +190,8 @@ public class StaffView implements Observer {
         historyPanel.setBorder(new CompoundBorder(
             new EmptyBorder(0, 16, 12, 16),
             new TitledBorder(BorderFactory.createLineBorder(new Color(180, 200, 230)),
-                " Lịch sử sự cố trong phiên ", TitledBorder.LEFT, TitledBorder.TOP,
+                " Lịch sử sự cố trong phiên ",
+                TitledBorder.LEFT, TitledBorder.TOP,
                 new Font("Arial", Font.BOLD, 12), BLUE)
         ));
         historyPanel.add(new JScrollPane(faultTable), BorderLayout.CENTER);
@@ -202,7 +203,7 @@ public class StaffView implements Observer {
         return split;
     }
 
-    //Tab thong bao Heatmap
+    //  TAB 4
     private JPanel buildTabAlerts() {
         JPanel p = new JPanel(new BorderLayout(0, 8));
         p.setBackground(BG);
@@ -219,7 +220,7 @@ public class StaffView implements Observer {
             public void mouseExited (MouseEvent e) { btnAckSelected.setBackground(new Color(0, 120, 60)); }
         });
         btnAckSelected.addActionListener(e -> acknowledgeSelected());
-        topBar.add(lbl, BorderLayout.WEST);
+        topBar.add(lbl,            BorderLayout.WEST);
         topBar.add(btnAckSelected, BorderLayout.EAST);
 
         alertTableModel = new DefaultTableModel(ALERT_COLS, 0) {
@@ -229,19 +230,13 @@ public class StaffView implements Observer {
             public Component prepareRenderer(TableCellRenderer r, int row, int col) {
                 Component c = super.prepareRenderer(r, row, col);
                 if (!isRowSelected(row)) {
-                    String level = (String) getValueAt(row, 3);
+                    String level  = (String) getValueAt(row, 3);
                     String status = (String) getValueAt(row, 5);
-                    if ("Đã xử lý".equals(status)) {
-                        c.setBackground(new Color(220, 240, 220));
-                    } else if ("CRITICAL".equals(level)) {
-                        c.setBackground(new Color(255, 220, 220));
-                    } else if ("WARNING".equals(level)) {
-                        c.setBackground(new Color(255, 240, 200));
-                    } else if ("ATTENTION".equals(level)) {
-                        c.setBackground(new Color(220, 235, 255));
-                    } else {
-                        c.setBackground(row % 2 == 0 ? ROW_EVEN : WHITE);
-                    }
+                    if ("Đã xử lý".equals(status))       c.setBackground(new Color(220, 240, 220));
+                    else if ("CRITICAL".equals(level))    c.setBackground(new Color(255, 220, 220));
+                    else if ("WARNING".equals(level))     c.setBackground(new Color(255, 240, 200));
+                    else if ("ATTENTION".equals(level))   c.setBackground(new Color(220, 235, 255));
+                    else c.setBackground(row % 2 == 0 ? ROW_EVEN : WHITE);
                 }
                 return c;
             }
@@ -257,11 +252,9 @@ public class StaffView implements Observer {
         JScrollPane sp = new JScrollPane(alertTable);
         sp.setBorder(BorderFactory.createLineBorder(new Color(180, 200, 230)));
 
-        JPanel legend = buildLegend();
-
-        p.add(topBar, BorderLayout.NORTH);
-        p.add(sp,     BorderLayout.CENTER);
-        p.add(legend, BorderLayout.SOUTH);
+        p.add(topBar,        BorderLayout.NORTH);
+        p.add(sp,            BorderLayout.CENTER);
+        p.add(buildLegend(), BorderLayout.SOUTH);
         return p;
     }
 
@@ -274,6 +267,7 @@ public class StaffView implements Observer {
         l.add(legendDot(new Color(220, 240, 220), "Đã xử lý"));
         return l;
     }
+
     private JPanel legendDot(Color color, String label) {
         JPanel dot = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         dot.setBackground(BG);
@@ -287,7 +281,7 @@ public class StaffView implements Observer {
         return dot;
     }
 
-    //Goi controller cap nhat
+    //Controller
     public void showCheckResult(String ticketId, boolean valid, String stateDesc) {
         SwingUtilities.invokeLater(() -> {
             lblCheckResult.setForeground(valid ? GREEN : Color.RED);
@@ -337,7 +331,9 @@ public class StaffView implements Observer {
 
     public void showError(String message) {
         SwingUtilities.invokeLater(() ->
-            JOptionPane.showMessageDialog(frame, message, "Lỗi", JOptionPane.ERROR_MESSAGE));
+            JOptionPane.showMessageDialog(
+                SwingUtilities.getWindowAncestor(this),
+                message, "Lỗi", JOptionPane.ERROR_MESSAGE));
     }
 
 
@@ -362,11 +358,13 @@ public class StaffView implements Observer {
                 "Chờ xử lý"
             });
             int last = alertTable.getRowCount() - 1;
-            if (last >= 0) alertTable.scrollRectToVisible(alertTable.getCellRect(last, 0, true));
+            if (last >= 0)
+                alertTable.scrollRectToVisible(alertTable.getCellRect(last, 0, true));
 
             if (alert.getAlertLevel() == AlertLevel.CRITICAL) {
                 tabbedPane.setSelectedIndex(3);
-                JOptionPane.showMessageDialog(frame,
+                JOptionPane.showMessageDialog(
+                    SwingUtilities.getWindowAncestor(this),
                     "KHẨN CẤP: Ga " + alert.getStation().getStationName()
                     + " quá tải " + String.format("%.0f%%", alert.getOccupancyRate() * 100),
                     "CẢNH BÁO KHẨN CẤP", JOptionPane.WARNING_MESSAGE);
@@ -378,7 +376,8 @@ public class StaffView implements Observer {
     private void acknowledgeSelected() {
         int[] rows = alertTable.getSelectedRows();
         if (rows.length == 0) {
-            JOptionPane.showMessageDialog(frame,
+            JOptionPane.showMessageDialog(
+                SwingUtilities.getWindowAncestor(this),
                 "Vui lòng chọn ít nhất một cảnh báo để xác nhận.",
                 "Chưa chọn", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -386,15 +385,14 @@ public class StaffView implements Observer {
         for (int row : rows) {
             alertTableModel.setValueAt("Đã xử lý", row, 5);
             int idx = (int) alertTableModel.getValueAt(row, 0) - 1;
-            if (idx >= 0 && idx < alertList.size()) {
+            if (idx >= 0 && idx < alertList.size())
                 alertList.get(idx).acknowledge();
-            }
         }
         alertTable.clearSelection();
         alertTable.repaint();
     }
 
-    //Ham ho tro
+    //Ho tro
     private void styleTable(JTable table) {
         table.setFont(new Font("Arial", Font.PLAIN, 12));
         table.setRowHeight(26);
@@ -441,15 +439,8 @@ public class StaffView implements Observer {
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btn.setBackground(BLUE_LIGHT); }
-            public void mouseExited (MouseEvent e) {
-                if (!btn.getBackground().equals(new Color(0,120,60)))
-                    btn.setBackground(BLUE);
-            }
+            public void mouseExited (MouseEvent e) { btn.setBackground(BLUE); }
         });
         return btn;
-    }
-
-    public void show() {
-        SwingUtilities.invokeLater(() -> frame.setVisible(true));
     }
 }
