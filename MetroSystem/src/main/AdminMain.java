@@ -9,7 +9,7 @@ public class AdminMain {
 
     public static void main(String[] args) {
 
-        // ── 1. Tao tuyen & ga ──────────────────────────────
+        // ── 1. Tuyen & Ga ──────────────────────────────────
         MetroLine line1 = new MetroLine("L1", "Ben Thanh - Suoi Tien");
         Station s1 = new Station("S01", "Ben Thanh", line1, 500);
         Station s2 = new Station("S02", "Ba Son",    line1, 400);
@@ -23,37 +23,51 @@ public class AdminMain {
         Station s6 = new Station("S06", "Tham Luong",   line2, 300);
         line2.addStation(s5); line2.addStation(s6);
 
-        // ── 2. Hanh khach mau ──────────────────────────────
+        // ── 2. Hanh khach ──────────────────────────────────
         Passenger p1 = new Passenger("P001", "Nguyen Van A", PassengerType.NORMAL,  "ID001", 500000);
         Passenger p2 = new Passenger("P002", "Tran Thi B",   PassengerType.STUDENT, "ID002", 300000);
         Passenger p3 = new Passenger("P003", "Le Van C",     PassengerType.SENIOR,  "ID003", 300000);
 
-        TicketManager tm = TicketManager.getInstance();
+        TicketManager tm  = TicketManager.getInstance();
         FareConfig    cfg = FareConfig.getInstance();
 
-        // ── 3. PHASE A: Phat hanh ve voi GIA GOC ──────────
-        // [THEM MOI] - Danh dau era "Gia goc" truoc khi tao ve Phase A
-        tm.markPriceEra("Gia goc (truoc cap nhat)");
+        // ── 3. PHASE A: Ve mua voi GIA GOC ─────────────────
+        // Era mac dinh = "Gia goc (truoc cap nhat)" - dat san trong TicketManager
+        System.out.println("=== PHASE A: Phat hanh ve gia goc ===");
+        System.out.printf("    Config: base=%,.0f | perStop=%,.0f | daily=%,.0f | monthly=%,.0f%n",
+            cfg.getBaseFare(), cfg.getFarePerStop(),
+            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly());
 
         tm.issueTicket(p1, TicketType.SINGLE,  3);
         tm.issueTicket(p2, TicketType.DAILY,   0);
         tm.issueTicket(p3, TicketType.MONTHLY, 0);
 
-        // ── 4. Simulate cap nhat gia lan 1 ─────────────────
-        // [THEM MOI] - Danh dau era moi TRUOC khi doi gia, sau do doi gia
-        // Thu tu nay quan trong: markPriceEra phai goi truoc issueTicket tiep theo
+        // ── 4. CAP NHAT GIA LAN 1 ──────────────────────────
+        // BUOC 1: Set gia moi vao FareConfig TRUOC
         cfg.setBaseFare(10000);
         cfg.setFarePerStop(5000);
         cfg.setFixedPriceDaily(60000);
         cfg.setFixedPriceMonthly(500000);
-        tm.markPriceEra("Sau cap nhat lan 1 (base=10k, perStop=5k, daily=60k, monthly=500k)");
 
-        // ── 5. PHASE B: Phat hanh ve voi GIA MOI ──────────
+        // BUOC 2: Danh dau era moi SAU khi da set gia xong
+        // -> cac ve tiep theo se thuoc era nay
+        String eraLabel = String.format(
+            "Sau cap nhat lan 1 (base=%,.0f | perStop=%,.0f | ngay=%,.0f | thang=%,.0f)",
+            cfg.getBaseFare(), cfg.getFarePerStop(),
+            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly());
+        tm.markPriceEra(eraLabel);
+
+        System.out.println("\n=== PHASE B: Phat hanh ve gia moi ===");
+        System.out.printf("    Config: base=%,.0f | perStop=%,.0f | daily=%,.0f | monthly=%,.0f%n",
+            cfg.getBaseFare(), cfg.getFarePerStop(),
+            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly());
+
+        // ── 5. PHASE B: Ve mua voi GIA MOI ─────────────────
         tm.issueTicket(p1, TicketType.SINGLE,  3);
         tm.issueTicket(p2, TicketType.DAILY,   0);
         tm.issueTicket(p3, TicketType.MONTHLY, 0);
 
-        // ── 6. HeatMap data ────────────────────────────────
+        // ── 6. HeatMap ─────────────────────────────────────
         for (int i = 0; i < 290; i++) s2.incrementCheckIn();
         for (int i = 0; i < 340; i++) s3.incrementCheckIn();
         HeatmapService hms = HeatmapService.getInstance();
@@ -62,17 +76,16 @@ public class AdminMain {
 
         // ── 7. VerifyService ───────────────────────────────
         VerifyService vs = VerifyService.getInstance();
-        vs.registerCitizen(new CitizenInfo("ID002", "Tran Thi B", LocalDate.of(2004, 1, 1), true,  false));
-        vs.registerCitizen(new CitizenInfo("ID003", "Le Van C",   LocalDate.of(1958, 5, 10), false, false));
+        vs.registerCitizen(new CitizenInfo("ID002", "Tran Thi B",
+            LocalDate.of(2004, 1, 1),  true,  false));
+        vs.registerCitizen(new CitizenInfo("ID003", "Le Van C",
+            LocalDate.of(1958, 5, 10), false, false));
 
-        // ── 8. Khoi tao MVC ────────────────────────────────
+        // ── 8. MVC ─────────────────────────────────────────
         Admin admin = new Admin("ADM01", "Nguyen Thi Admin", "admin123");
         if (!admin.login("admin123")) { System.err.println("Login failed!"); return; }
 
         AdminView view = new AdminView();
-
-        // [THEM MOI] - Truyen TicketManager vao AdminController de controller
-        // co the goi markPriceEra() moi khi Admin cap nhat gia tren UI
         AdminController controller = new AdminController(admin, view);
         view.setController(controller);
         controller.registerLine(line1);
