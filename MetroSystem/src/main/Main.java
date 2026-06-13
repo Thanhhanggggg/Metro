@@ -5,6 +5,8 @@ import view.LoginView;
 
 import javax.swing.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ============================================================
@@ -24,7 +26,11 @@ import java.time.LocalDate;
  */
 public class Main {
 
-    public static void main(String[] args) {
+    public static Passenger passenger;
+    public static List<MetroLine> lines = new ArrayList<>();
+    public static List<Station> stations = new ArrayList<>();
+
+	public static void main(String[] args) {
         // 1. Khởi tạo dữ liệu mẫu cho toàn hệ thống
         seedMetroData();
 
@@ -63,6 +69,18 @@ public class Main {
         line2.addStation(s6);
         line2.addStation(s7);
         line2.addStation(s8);
+        
+        stations.add(s1);
+        stations.add(s2);
+        stations.add(s3);
+        stations.add(s4);
+        stations.add(s5);
+        stations.add(s6);
+        stations.add(s7);
+        stations.add(s8);
+        
+        lines.add(line1);
+        lines.add(line2);
 
         // ── 2. Hành khách ──────────────────────────────────────
         Passenger p1 = new Passenger("P001", "Nguyen Van A",  PassengerType.NORMAL,  "ID001", 500000);
@@ -70,6 +88,8 @@ public class Main {
         Passenger p3 = new Passenger("P003", "Le Van C",      PassengerType.SENIOR,  "ID003", 300000);
         Passenger p4 = new Passenger("P004", "Pham Thi D",    PassengerType.SENIOR,  "ID004", 100000);
         Passenger p5 = new Passenger("P005", "Hoang Van E",   PassengerType.NORMAL,  "ID005", 150000);
+        
+        passenger = p1;
 
         // ── 3. Phát hành vé vào TicketManager ─────────────────
         TicketManager tm = TicketManager.getInstance();
