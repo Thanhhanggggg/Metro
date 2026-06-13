@@ -1,15 +1,27 @@
-package Metro;
+package controller;
 
 import java.util.List;
+import Metro.*;
+import Metro.StationStaff;
+import view.*;
 
 public class StaffController implements IController {
 
-    private final StationStaff staff;
-    private final StaffView    view;
+    private StationStaff staff;
+    private StaffView    view;
 
     public StaffController(StationStaff staff, StaffView view) {
         this.staff = staff;
         this.view  = view;
+        HeatmapService.getInstance().attach(view);
+    }
+ 
+    public StaffController() {
+        this.staff = new StationStaff("ST_DEFAULT", "Staff", "1234", "ST_DEFAULT");
+    }
+ 
+    public void setView(StaffView view) {
+        this.view = view;
         HeatmapService.getInstance().attach(view);
     }
 
