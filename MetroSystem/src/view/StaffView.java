@@ -1,63 +1,77 @@
-package view;
+package Metro;
 
-import controller.*;
-import Metro.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
-public class StaffView extends JPanel implements Observer {
-	private IController controller;
+public class StaffView implements Observer {
+	 private IController controller;
 
-    private static final Color BLUE       = new Color(30, 90, 180);
-    private static final Color BLUE_LIGHT = new Color(70, 130, 220);
-    private static final Color WHITE      = Color.WHITE;
-    private static final Color BG         = new Color(245, 247, 250);
+    private static final Color BLUE        = new Color(30, 90, 180);
+    private static final Color BLUE_LIGHT  = new Color(70, 130, 220);
+    private static final Color GREEN       = new Color(0, 140, 0);
+    private static final Color ORANGE      = new Color(200, 100, 0);
+    private static final Color RED_ALERT   = new Color(180, 30, 30);
+    private static final Color WHITE       = Color.WHITE;
+    private static final Color BG          = new Color(245, 247, 250);
+    private static final Color ROW_EVEN    = new Color(235, 242, 255);
 
-   // private JFrame frame;
+    private JFrame      frame;
     private JTabbedPane tabbedPane;
 
-    // Tab 1: Kiem tra ve
+    // Tab kiem tra ve
     private JTextField txtCheckTicketId;
     private JButton    btnCheckTicket;
     private JLabel     lblCheckResult;
 
-    // Tab 2: Hoan ve
+    // Tab hoan ve
     private JTextField txtRefundTicketId;
     private JButton    btnRefund;
     private JTextArea  taRefundResult;
 
-    // Tab 3: Bao cao su co
-    private JTextField txtGateId;
-    private JTextField txtFaultDesc;
-    private JButton    btnReportFault;
-    private JLabel     lblFaultResult;
+    // Tab bao cao su co
+    private JTextField         txtGateId;
+    private JTextField         txtFaultDesc;
+    private JButton            btnReportFault;
+    private JLabel             lblFaultResult;
+    private DefaultTableModel  faultTableModel;   
+    private static final String[] FAULT_COLS =
+        { "#", "Gate ID", "Mô tả", "Thời gian", "Trạng thái" };
 
-    // Tab 4: Thng bao Heatnao
-    private JTextArea  taAlerts;
+    // Tab thong bao Heatmap
+    private DefaultTableModel  alertTableModel;   
+    private static final String[] ALERT_COLS =
+        { "#", "Ga", "Mật độ", "Mức", "Thời gian", "Trạng thái" };
+    private JButton btnAckSelected;               // ← nút xác nhận
+    private JTable  alertTable;
 
+    private final List<HeatmapAlert> alertList = new ArrayList<>();
+    private int faultCount = 0;
+    private int alertCount = 0;
 
-    public StaffView() {
-        buildUI();
-    }
+    public StaffView() { 
+		buildUI(); 
+	}
 
     public void setController(IController controller) {
         this.controller = controller;
     }
 
-    //UI
+  //UI
     private void buildUI() {
-//        frame = new JFrame("Station Staff Management");
-//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//        frame.setSize(600, 480);
-//        frame.setLocationRelativeTo(null);
-//        frame.setLayout(new BorderLayout());
-    	
+        frame = new JFrame("Station Staff Management");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(700, 560);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
+
         // Header
-    	setLayout(new BorderLayout());
-    	
         JPanel header = new JPanel();
         header.setBackground(BLUE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -65,38 +79,33 @@ public class StaffView extends JPanel implements Observer {
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(WHITE);
         header.add(title);
-        //frame.add(header, BorderLayout.NORTH);
-        add(header, BorderLayout.NORTH);
- //       add(tabbedPane, BorderLayout.CENTER);
+        frame.add(header, BorderLayout.NORTH);
 
-        // Tabs
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.PLAIN, 13));
         tabbedPane.setBackground(BG);
-        tabbedPane.addTab("Kiểm tra vé",  buildTabCheckTicket());
-        tabbedPane.addTab("Hoàn vé",       buildTabRefund());
-        tabbedPane.addTab("Báo cáo sự cố", buildTabFault());
-        tabbedPane.addTab("Thông báo",      buildTabAlerts());
-        add(tabbedPane, BorderLayout.CENTER);
-       // frame.add(tabbedPane, BorderLayout.CENTER);
+        tabbedPane.addTab("Kiểm tra vé",   buildTabCheckTicket());
+        tabbedPane.addTab("Hoàn vé",        buildTabRefund());
+        tabbedPane.addTab("Báo cáo sự cố",  buildTabFault());
+        tabbedPane.addTab("Thông báo",       buildTabAlerts());
+        frame.add(tabbedPane, BorderLayout.CENTER);
     }
 
-    //Tab 1- Kiem tra ve
+    //Tab kiem tra ve
     private JPanel buildTabCheckTicket() {
         JPanel p = createTabPanel();
-
-        JLabel lbl = styledLabel("Nhập mã vé cần kiểm tra:");
         txtCheckTicketId = styledTextField();
         btnCheckTicket   = styledButton("Kiểm tra");
         lblCheckResult   = new JLabel(" ");
         lblCheckResult.setFont(new Font("Arial", Font.BOLD, 13));
+        lblCheckResult.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         btnCheckTicket.addActionListener(e -> {
             if (controller != null)
                 controller.handleAction("CHECK_TICKET", txtCheckTicketId.getText().trim());
         });
 
-        p.add(lbl);
+        p.add(styledLabel("Nhập mã vé cần kiểm tra:"));
         p.add(Box.createVerticalStrut(8));
         p.add(txtCheckTicketId);
         p.add(Box.createVerticalStrut(10));
@@ -106,11 +115,9 @@ public class StaffView extends JPanel implements Observer {
         return p;
     }
 
-    //Tab 2 - Hoan ve
+   //Tab hoan ve
     private JPanel buildTabRefund() {
         JPanel p = createTabPanel();
-
-        JLabel lbl      = styledLabel("Nhập mã vé cần hoàn:");
         txtRefundTicketId = styledTextField();
         btnRefund         = styledButton("Xác nhận hoàn vé");
         taRefundResult    = new JTextArea(5, 30);
@@ -119,14 +126,14 @@ public class StaffView extends JPanel implements Observer {
         taRefundResult.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         JScrollPane sp = new JScrollPane(taRefundResult);
         sp.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sp.setMaximumSize(new Dimension(460, 100));
+        sp.setMaximumSize(new Dimension(580, 110));
 
         btnRefund.addActionListener(e -> {
             if (controller != null)
                 controller.handleAction("REFUND", txtRefundTicketId.getText().trim());
         });
 
-        p.add(lbl);
+        p.add(styledLabel("Nhập mã vé cần hoàn:"));
         p.add(Box.createVerticalStrut(8));
         p.add(txtRefundTicketId);
         p.add(Box.createVerticalStrut(10));
@@ -136,78 +143,159 @@ public class StaffView extends JPanel implements Observer {
         return p;
     }
 
-    // Tab 3: Bao cao su co
-    private JPanel buildTabFault() {
-        JPanel p = createTabPanel();
+    //Tab bao cao su co
+    private JComponent buildTabFault() {
+        JPanel formPanel = createTabPanel();
+        formPanel.setBorder(new EmptyBorder(16, 30, 12, 30));
 
-        JLabel lblGate = styledLabel("Mã cổng (Gate ID):");
         txtGateId      = styledTextField();
-        JLabel lblDesc = styledLabel("Mô tả sự cố:");
         txtFaultDesc   = styledTextField();
         btnReportFault = styledButton("Báo cáo sự cố");
         lblFaultResult = new JLabel(" ");
         lblFaultResult.setFont(new Font("Arial", Font.BOLD, 13));
+        lblFaultResult.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         btnReportFault.addActionListener(e -> {
             if (controller != null)
                 controller.handleAction("FAULT",
-                        txtGateId.getText().trim(),
-                        txtFaultDesc.getText().trim());
+                    txtGateId.getText().trim(),
+                    txtFaultDesc.getText().trim());
         });
 
-        
-        p.add(lblGate);
-        p.add(Box.createVerticalStrut(6));
-        p.add(txtGateId);
-        p.add(Box.createVerticalStrut(12));
-        p.add(lblDesc);
-        p.add(Box.createVerticalStrut(6));
-        p.add(txtFaultDesc);
-        p.add(Box.createVerticalStrut(12));
-        p.add(btnReportFault);
-        p.add(Box.createVerticalStrut(16));
-        p.add(lblFaultResult);
-        return p;
-        
+        formPanel.add(styledLabel("Mã cổng (Gate ID):"));
+        formPanel.add(Box.createVerticalStrut(6));
+        formPanel.add(txtGateId);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(styledLabel("Mô tả sự cố:"));
+        formPanel.add(Box.createVerticalStrut(6));
+        formPanel.add(txtFaultDesc);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(btnReportFault);
+        formPanel.add(Box.createVerticalStrut(8));
+        formPanel.add(lblFaultResult);
+
+        faultTableModel = new DefaultTableModel(FAULT_COLS, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable faultTable = new JTable(faultTableModel);
+        styleTable(faultTable);
+        faultTable.getColumnModel().getColumn(0).setMaxWidth(35);
+        faultTable.getColumnModel().getColumn(1).setPreferredWidth(80);
+        faultTable.getColumnModel().getColumn(2).setPreferredWidth(200);
+        faultTable.getColumnModel().getColumn(3).setPreferredWidth(130);
+        faultTable.getColumnModel().getColumn(4).setPreferredWidth(90);
+
+        JPanel historyPanel = new JPanel(new BorderLayout());
+        historyPanel.setBackground(BG);
+        historyPanel.setBorder(new CompoundBorder(
+            new EmptyBorder(0, 16, 12, 16),
+            new TitledBorder(BorderFactory.createLineBorder(new Color(180, 200, 230)),
+                " Lịch sử sự cố trong phiên ", TitledBorder.LEFT, TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 12), BLUE)
+        ));
+        historyPanel.add(new JScrollPane(faultTable), BorderLayout.CENTER);
+
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formPanel, historyPanel);
+        split.setDividerLocation(240);
+        split.setResizeWeight(0.45);
+        split.setBorder(null);
+        return split;
     }
 
-    
-    //Tab 4 - Thong bao Heatmap
+    //Tab thong bao Heatmap
     private JPanel buildTabAlerts() {
-        JPanel p = new JPanel(new BorderLayout());
+        JPanel p = new JPanel(new BorderLayout(0, 8));
         p.setBackground(BG);
-        p.setBorder(new EmptyBorder(20, 30, 20, 30));
+        p.setBorder(new EmptyBorder(16, 20, 16, 20));
 
-        JLabel lbl = styledLabel("Thông báo cảnh báo lưu lượng:");
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(BG);
+        JLabel lbl = styledLabel("Cảnh báo lưu lượng hành khách:");
+        lbl.setFont(new Font("Arial", Font.BOLD, 13));
+        btnAckSelected = styledButton("Xác nhận đã xử lý");
+        btnAckSelected.setBackground(new Color(0, 120, 60));
+        btnAckSelected.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnAckSelected.setBackground(new Color(0, 160, 80)); }
+            public void mouseExited (MouseEvent e) { btnAckSelected.setBackground(new Color(0, 120, 60)); }
+        });
+        btnAckSelected.addActionListener(e -> acknowledgeSelected());
+        topBar.add(lbl, BorderLayout.WEST);
+        topBar.add(btnAckSelected, BorderLayout.EAST);
 
-        taAlerts = new JTextArea();
-        taAlerts.setEditable(false);
-        taAlerts.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        taAlerts.setBackground(new Color(240, 244, 255));
-        JScrollPane sp = new JScrollPane(taAlerts);
+        alertTableModel = new DefaultTableModel(ALERT_COLS, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        alertTable = new JTable(alertTableModel) {
+            public Component prepareRenderer(TableCellRenderer r, int row, int col) {
+                Component c = super.prepareRenderer(r, row, col);
+                if (!isRowSelected(row)) {
+                    String level = (String) getValueAt(row, 3);
+                    String status = (String) getValueAt(row, 5);
+                    if ("Đã xử lý".equals(status)) {
+                        c.setBackground(new Color(220, 240, 220));
+                    } else if ("CRITICAL".equals(level)) {
+                        c.setBackground(new Color(255, 220, 220));
+                    } else if ("WARNING".equals(level)) {
+                        c.setBackground(new Color(255, 240, 200));
+                    } else if ("ATTENTION".equals(level)) {
+                        c.setBackground(new Color(220, 235, 255));
+                    } else {
+                        c.setBackground(row % 2 == 0 ? ROW_EVEN : WHITE);
+                    }
+                }
+                return c;
+            }
+        };
+        styleTable(alertTable);
+        alertTable.getColumnModel().getColumn(0).setMaxWidth(35);
+        alertTable.getColumnModel().getColumn(1).setPreferredWidth(130);
+        alertTable.getColumnModel().getColumn(2).setPreferredWidth(70);
+        alertTable.getColumnModel().getColumn(3).setPreferredWidth(80);
+        alertTable.getColumnModel().getColumn(4).setPreferredWidth(130);
+        alertTable.getColumnModel().getColumn(5).setPreferredWidth(90);
 
-        p.add(lbl, BorderLayout.NORTH);
-        p.add(sp,  BorderLayout.CENTER);
+        JScrollPane sp = new JScrollPane(alertTable);
+        sp.setBorder(BorderFactory.createLineBorder(new Color(180, 200, 230)));
+
+        JPanel legend = buildLegend();
+
+        p.add(topBar, BorderLayout.NORTH);
+        p.add(sp,     BorderLayout.CENTER);
+        p.add(legend, BorderLayout.SOUTH);
         return p;
     }
 
-    
-    //Controller goi de cap nhat View
-    //Hien thi ket qua kiem tra ve
+    private JPanel buildLegend() {
+        JPanel l = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        l.setBackground(BG);
+        l.add(legendDot(new Color(255, 220, 220), "CRITICAL"));
+        l.add(legendDot(new Color(255, 240, 200), "WARNING"));
+        l.add(legendDot(new Color(220, 235, 255), "ATTENTION"));
+        l.add(legendDot(new Color(220, 240, 220), "Đã xử lý"));
+        return l;
+    }
+    private JPanel legendDot(Color color, String label) {
+        JPanel dot = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        dot.setBackground(BG);
+        JLabel box = new JLabel("  ");
+        box.setOpaque(true);
+        box.setBackground(color);
+        box.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        JLabel txt = new JLabel(label);
+        txt.setFont(new Font("Arial", Font.PLAIN, 11));
+        dot.add(box); dot.add(txt);
+        return dot;
+    }
+
+    //Goi controller cap nhat
     public void showCheckResult(String ticketId, boolean valid, String stateDesc) {
         SwingUtilities.invokeLater(() -> {
-            if (valid) {
-                lblCheckResult.setForeground(new Color(0, 140, 0));
-                lblCheckResult.setText("Vé [" + ticketId + "] HỢP LỆ — " + stateDesc);
-            } else {
-                lblCheckResult.setForeground(Color.RED);
-                lblCheckResult.setText("Vé [" + ticketId + "] KHÔNG HỢP LỆ — " + stateDesc);
-            }
+            lblCheckResult.setForeground(valid ? GREEN : Color.RED);
+            lblCheckResult.setText((valid ? "HỢP LỆ" : "KHÔNG HỢP LỆ")
+                + " — [" + ticketId + "] " + stateDesc);
         });
     }
 
-    //Hien thi ket qua hoan ve
     public void showRefundResult(String ticketId, boolean success, double amount, String reason) {
         SwingUtilities.invokeLater(() -> {
             if (success) {
@@ -215,38 +303,44 @@ public class StaffView extends JPanel implements Observer {
                     "Hoàn vé thành công!\n" +
                     "Mã vé  : " + ticketId + "\n" +
                     "Số tiền: " + String.format("%,.0f VND", amount) + "\n" +
-                    "Lý do  : " + reason
-                );
+                    "Lý do  : " + reason);
             } else {
                 taRefundResult.setText(
                     "Không thể hoàn vé!\n" +
                     "Mã vé  : " + ticketId + "\n" +
-                    "Lý do  : " + reason
-                );
+                    "Lý do  : " + reason);
             }
         });
     }
 
-    //Hien thi ket qua bao cao su co
-    public void showFaultLogged(String gateId, boolean success) {
+    public void showFaultLogged(String gateId, boolean success, String desc) {
         SwingUtilities.invokeLater(() -> {
             if (success) {
-                lblFaultResult.setForeground(new Color(0, 140, 0));
-                lblFaultResult.setText("✅ Đã vô hiệu hóa cổng [" + gateId + "] và lưu FaultLog.");
+                lblFaultResult.setForeground(GREEN);
+                lblFaultResult.setText("Đã vô hiệu hóa cổng [" + gateId + "] và lưu FaultLog.");
+                faultCount++;
+                String time = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("HH:mm:ss dd/MM"));
+                faultTableModel.addRow(new Object[]{
+                    faultCount, gateId, desc, time, "DISABLED"
+                });
             } else {
                 lblFaultResult.setForeground(Color.RED);
-                lblFaultResult.setText("❌ Không tìm thấy cổng [" + gateId + "].");
+                lblFaultResult.setText("Không tìm thấy cổng [" + gateId + "].");
             }
         });
     }
 
-    // Hien thi loi chung
-    public void showError(String message) {
-        SwingUtilities.invokeLater(() ->
-            JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE));
+    public void showFaultLogged(String gateId, boolean success) {
+        showFaultLogged(gateId, success, "-");
     }
 
-    
+    public void showError(String message) {
+        SwingUtilities.invokeLater(() ->
+            JOptionPane.showMessageDialog(frame, message, "Lỗi", JOptionPane.ERROR_MESSAGE));
+    }
+
+
     @Override
     public void update() {
         HeatmapAlert alert = HeatmapService.getInstance().getLatestAlert();
@@ -255,25 +349,69 @@ public class StaffView extends JPanel implements Observer {
 
     public void showAlert(HeatmapAlert alert) {
         SwingUtilities.invokeLater(() -> {
-            taAlerts.append(alert.toString() + "\n");
-            taAlerts.setCaretPosition(taAlerts.getDocument().getLength());
-            // Tự chuyển sang tab thông báo nếu CRITICAL
+            alertList.add(alert);
+            alertCount++;
+            String time = alert.getTimestamp()
+                .format(DateTimeFormatter.ofPattern("HH:mm:ss dd/MM"));
+            alertTableModel.addRow(new Object[]{
+                alertCount,
+                alert.getStation().getStationName(),
+                String.format("%.0f%%", alert.getOccupancyRate() * 100),
+                alert.getAlertLevel().name(),
+                time,
+                "Chờ xử lý"
+            });
+            int last = alertTable.getRowCount() - 1;
+            if (last >= 0) alertTable.scrollRectToVisible(alertTable.getCellRect(last, 0, true));
+
             if (alert.getAlertLevel() == AlertLevel.CRITICAL) {
                 tabbedPane.setSelectedIndex(3);
-                JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(frame,
                     "KHẨN CẤP: Ga " + alert.getStation().getStationName()
-                    + " đã quá tải " + String.format("%.0f%%", alert.getOccupancyRate() * 100),
+                    + " quá tải " + String.format("%.0f%%", alert.getOccupancyRate() * 100),
                     "CẢNH BÁO KHẨN CẤP", JOptionPane.WARNING_MESSAGE);
             }
         });
     }
 
-    // Ho tro
+
+    private void acknowledgeSelected() {
+        int[] rows = alertTable.getSelectedRows();
+        if (rows.length == 0) {
+            JOptionPane.showMessageDialog(frame,
+                "Vui lòng chọn ít nhất một cảnh báo để xác nhận.",
+                "Chưa chọn", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        for (int row : rows) {
+            alertTableModel.setValueAt("Đã xử lý", row, 5);
+            int idx = (int) alertTableModel.getValueAt(row, 0) - 1;
+            if (idx >= 0 && idx < alertList.size()) {
+                alertList.get(idx).acknowledge();
+            }
+        }
+        alertTable.clearSelection();
+        alertTable.repaint();
+    }
+
+    //Ham ho tro
+    private void styleTable(JTable table) {
+        table.setFont(new Font("Arial", Font.PLAIN, 12));
+        table.setRowHeight(26);
+        table.setGridColor(new Color(210, 220, 235));
+        table.setShowGrid(true);
+        table.setSelectionBackground(new Color(180, 210, 255));
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.getTableHeader().setBackground(BLUE);
+        table.getTableHeader().setForeground(WHITE);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+    }
+
     private JPanel createTabPanel() {
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setBackground(BG);
-        p.setBorder(new EmptyBorder(24, 40, 24, 40));
+        p.setBorder(new EmptyBorder(20, 36, 20, 36));
         return p;
     }
 
@@ -287,7 +425,7 @@ public class StaffView extends JPanel implements Observer {
     private JTextField styledTextField() {
         JTextField tf = new JTextField();
         tf.setFont(new Font("Arial", Font.PLAIN, 13));
-        tf.setMaximumSize(new Dimension(460, 32));
+        tf.setMaximumSize(new Dimension(560, 32));
         tf.setAlignmentX(Component.LEFT_ALIGNMENT);
         return tf;
     }
@@ -301,17 +439,17 @@ public class StaffView extends JPanel implements Observer {
         btn.setBorder(new EmptyBorder(8, 20, 8, 20));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        btn.setOpaque(true);
-        btn.setBorderPainted(false);
-        // Hover effect
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btn.setBackground(BLUE_LIGHT); }
-            public void mouseExited (MouseEvent e) { btn.setBackground(BLUE); }
+            public void mouseExited (MouseEvent e) {
+                if (!btn.getBackground().equals(new Color(0,120,60)))
+                    btn.setBackground(BLUE);
+            }
         });
         return btn;
     }
 
-//    public void show() {
-//        SwingUtilities.invokeLater(() -> frame.setVisible(true));
-//    }
+    public void show() {
+        SwingUtilities.invokeLater(() -> frame.setVisible(true));
+    }
 }
