@@ -664,6 +664,8 @@ public class AdminView extends JPanel {
 		btn.setFocusPainted(false);
 		btn.setBorder(new EmptyBorder(6, 14, 6, 14));
 		btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		btn.setOpaque(true);
+		btn.setBorderPainted(false);
 		Color lighter = bg.brighter();
 		btn.addMouseListener(new MouseAdapter() {
 			public void mouseEntered(MouseEvent e) {
