@@ -1,28 +1,19 @@
-package controller;
+package Metro;
 
 import java.util.List;
-import Metro.*;
-import view.*;
-
 
 public class StaffController implements IController {
 
-    private StationStaff staff;
-    private StaffView    view;
+    private final StationStaff staff;
+    private final StaffView    view;
 
     public StaffController(StationStaff staff, StaffView view) {
         this.staff = staff;
         this.view  = view;
-
-        // Đăng ký View (Observer) vào HeatmapService (Subject)
         HeatmapService.getInstance().attach(view);
     }
 
-    public StaffController() {
-		// TODO Auto-generated constructor stub
-	}
 
-	//  IController
     @Override
     public void handleAction(String action, Object... params) {
         switch (action) {
@@ -41,7 +32,7 @@ public class StaffController implements IController {
     }
 
 
-    // UC11 — Kiểm tra trạng thái vé 
+    // UC11 — Kiem tra trang thai ve
     private void handleCheckTicket(String ticketId) {
         if (!validate(ticketId)) {
             view.showError("Vui lòng nhập mã vé!");
@@ -60,7 +51,7 @@ public class StaffController implements IController {
         view.showCheckResult(ticketId, valid, stateDesc);
     }
 
-    // UC12 — Hoàn vé 
+    // UC12 — Hoan ve
     private void handleRefund(String ticketId) {
         if (!validate(ticketId)) {
             view.showError("Vui lòng nhập mã vé!");
@@ -80,7 +71,6 @@ public class StaffController implements IController {
             return;
         }
 
-        // Thực hiện hoàn vé 
         double amount = ticket.refund();
 
         if (amount >= 0 && ticket.getState() instanceof RefundedState) {
@@ -93,7 +83,7 @@ public class StaffController implements IController {
         }
     }
 
-    // UC13 — Ghi nhận sự cố thiết bị 
+    //UC13 — Ghi nhan su co thiet bi
     private void handleFault(String gateId, String description) {
         if (!validate(gateId)) {
             view.showError("Vui lòng nhập mã cổng!");
@@ -108,15 +98,13 @@ public class StaffController implements IController {
         SmartGate gate = new SmartGate(gateId, GateType.IN);
         gate.reportFault(description);
 
-        // Tìm vé bị ảnh hưởng
         List<Ticket> affected = TicketManager.getInstance().findAffectedTickets(gateId);
         System.out.println("So ve bi anh huong: " + affected.size());
 
-        view.showFaultLogged(gateId, true);
+        view.showFaultLogged(gateId, true, description);
     }
-    
-  
-    //Hỗ trợ
+
+    //Ham ho tro
     private String describeState(Ticket ticket) {
         TicketState state = ticket.getState();
         if (state instanceof ActiveState)   return "ACTIVE — Chưa sử dụng";
@@ -125,12 +113,4 @@ public class StaffController implements IController {
         if (state instanceof RefundedState) return "REFUNDED — Đã hoàn tiền";
         return "Không xác định";
     }
-
-	public void setView(StaffView view) {
-		this.view = view;
-	}
-    
-    
-
-	
 }
