@@ -205,45 +205,36 @@ public class AdminController implements IController {
 	}
 
 	// Cau hinh gia ve
-	 private void handleSetFare(double base, double perStop, double daily, double monthly) {
-	        if (base <= 0 || perStop <= 0) {
-	            view.showError("Gia co ban va gia moi tram phai > 0!");
-	            return;
-	        }
-	        if (daily <= 0 || monthly <= 0) {
-	            view.showError("Gia ve ngay va ve thang phai > 0!");
-	            return;
-	        }
-	 
-	        // Cap nhat gia co ban va gia moi tram qua Admin
-	        admin.setFareDetail(base, perStop);
-	 
-	        // Cap nhat gia co dinh cho ve ngay va ve thang
-	        FareConfig cfg = FareConfig.getInstance();
-	        cfg.setFixedPriceDaily(daily);
-	        cfg.setFixedPriceMonthly(monthly);
-	 
-	        // [THEM MOI] - Danh dau era moi trong TicketManager
-	        // Muc dich: cac ve duoc tao sau lan cap nhat nay se thuoc nhom gia moi
-	        // Nhan era mo ta chinh xac gia vua duoc thiet lap de bao cao de phan biet
-	        String eraLabel = String.format(
-	            "Sau cap nhat tren UI (base=%,.0f | perStop=%,.0f | daily=%,.0f | monthly=%,.0f)",
-	            cfg.getBaseFare(), cfg.getFarePerStop(),
-	            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()
-	        );
-	        TicketManager.getInstance().markPriceEra(eraLabel);
-	 
-	        view.showInfo(String.format(
-	            "Cap nhat gia thanh cong!\n" +
-	            "  Co ban    : %,.0f VND\n" +
-	            "  Moi tram  : %,.0f VND\n" +
-	            "  Ve ngay   : %,.0f VND\n" +
-	            "  Ve thang  : %,.0f VND",
-	            cfg.getBaseFare(), cfg.getFarePerStop(),
-	            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()
-	        ));
+	private void handleSetFare(double base, double perStop, double daily, double monthly) {
+	    if (base <= 0 || perStop <= 0 || daily <= 0 || monthly <= 0) {
+	        view.showError("Giá vé phải lớn hơn 0!");
+	        return;
 	    }
-	 
+
+	    // BƯỚC 1: Lấy cấu hình hệ thống hiện tại ra để ghi đè số mới vào
+	    FareConfig cfg = FareConfig.getInstance();
+	    
+	    // BƯỚC 2: Cập nhật CÁC GIÁ TRỊ ĐỘNG nhận từ giao diện (Params truyền sang)
+	    admin.setFareDetail(base, perStop); // Hàm cập nhật của đối tượng admin
+	    cfg.setFixedPriceDaily(daily);      // Cập nhật giá ngày vào config
+	    cfg.setFixedPriceMonthly(monthly);  // Cập nhật giá tháng vào config
+
+	    // BƯỚC 3: Tạo nhãn Era tự động gom các thông tin giá vừa nhập trên giao diện
+	    String eraLabel = String.format(
+	        "Sau cap nhat (base=%,.0f | perStop=%,.0f | daily=%,.0f | monthly=%,.0f)", 
+	        base, perStop, daily, monthly
+	    );
+
+	    // BƯỚC 4: Đóng dấu mốc thời gian (Era) mới cho TicketManager
+	    // Từ giây phút này, bất cứ vé nào mua mới trên giao diện bán vé sẽ mang khung giá này!
+	    TicketManager.getInstance().markPriceEra(eraLabel);
+
+	    // Hiển thị thông báo thành công lên màn hình Admin
+	    view.showInfo(String.format(
+	            "Cap nhat gia thanh cong!\n" + "  Co ban    : %,.0f VND\n" + "  Moi tram  : %,.0f VND\n"
+	                    + "  Ve ngay   : %,.0f VND\n" + "  Ve thang  : %,.0f VND",
+	            cfg.getBaseFare(), cfg.getFarePerStop(), cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
+	}
 	// Cap nhat bang chiet khau
 	private void handleUpdateDiscounts(Map<PassengerType, Double> map) {
 		if (map == null || map.isEmpty()) {
