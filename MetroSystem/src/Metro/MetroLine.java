@@ -276,4 +276,8 @@ public class MetroLine {
 
 	    System.out.println("\n========= KET THUC TEST METROLINE =========");
 	}
+		@Override
+	public String toString() {
+	    return lineName;
+	}
 }
