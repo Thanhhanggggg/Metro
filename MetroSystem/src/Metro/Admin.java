@@ -394,7 +394,7 @@ public class Admin extends Employee {
         MetroLine lineHM = new MetroLine("LH", "Tuyen Heatmap");
         Station gaHM = new Station("SH1", "Ga Heatmap Test", lineHM, 10);
         StationStaff staff = new StationStaff("ST001", "Nhan Vien 1", "pass", "ST001");
-        HeatmapService.getInstance().attach(staff);
+      //  HeatmapService.getInstance().attach(staff);
  
         // Check-in qua nguong 50%
         for (int i = 0; i < 6; i++) gaHM.incrementCheckIn();
