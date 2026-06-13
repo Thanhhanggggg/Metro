@@ -1,5 +1,6 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import Metro.*;
@@ -222,9 +223,10 @@ public class PassengerController implements IController {
 		this.view = view;
 	}
 	public void loadInitialData() {
-		// TODO Auto-generated method stub
-		
+	    this.passenger = main.Main.passenger;
+	    view.setLines(main.Main.lines);
+	    view.setStations(main.Main.stations);
+	}
 	}
 	
     
-}
