@@ -29,80 +29,55 @@ public class AdminMain {
         Passenger p3 = new Passenger("P003", "Le Van C",     PassengerType.SENIOR,  "ID003", 300000);
 
         TicketManager tm = TicketManager.getInstance();
+        FareConfig    cfg = FareConfig.getInstance();
 
-        // ── 3. PHASE A: Phat hanh ve voi GIA CU (truoc khi cap nhat) ──
-        System.out.println("\n======== PHASE A: Ve mua TRUOC khi cap nhat gia ========");
-        System.out.println("FareConfig hien tai: baseFare=" + FareConfig.getInstance().getBaseFare()
-                + " | farePerStop=" + FareConfig.getInstance().getFarePerStop()
-                + " | daily=" + FareConfig.getInstance().getFixedPriceDaily()
-                + " | monthly=" + FareConfig.getInstance().getFixedPriceMonthly());
+        // ── 3. PHASE A: Phat hanh ve voi GIA GOC ──────────
+        // [THEM MOI] - Danh dau era "Gia goc" truoc khi tao ve Phase A
+        tm.markPriceEra("Gia goc (truoc cap nhat)");
 
-        Ticket oldSingle  = tm.issueTicket(p1, TicketType.SINGLE,  3);
-        Ticket oldDaily   = tm.issueTicket(p2, TicketType.DAILY,   0);
-        Ticket oldMonthly = tm.issueTicket(p3, TicketType.MONTHLY, 0);
+        tm.issueTicket(p1, TicketType.SINGLE,  3);
+        tm.issueTicket(p2, TicketType.DAILY,   0);
+        tm.issueTicket(p3, TicketType.MONTHLY, 0);
 
-        System.out.println("[Gia cu] SINGLE  = " + oldSingle.getPrice());
-        System.out.println("[Gia cu] DAILY   = " + oldDaily.getPrice());
-        System.out.println("[Gia cu] MONTHLY = " + oldMonthly.getPrice());
-
-        // ── 4. Cap nhat gia (simulate Admin thay doi) ──────
-        System.out.println("\n======== CAP NHAT GIA ========");
-        FareConfig cfg = FareConfig.getInstance();
+        // ── 4. Simulate cap nhat gia lan 1 ─────────────────
+        // [THEM MOI] - Danh dau era moi TRUOC khi doi gia, sau do doi gia
+        // Thu tu nay quan trong: markPriceEra phai goi truoc issueTicket tiep theo
         cfg.setBaseFare(10000);
         cfg.setFarePerStop(5000);
-        cfg.setFixedPriceDaily(100000);
-        cfg.setFixedPriceMonthly(200000);
-        System.out.println("FareConfig moi: baseFare=" + cfg.getBaseFare()
-                + " | farePerStop=" + cfg.getFarePerStop()
-                + " | daily=" + cfg.getFixedPriceDaily()
-                + " | monthly=" + cfg.getFixedPriceMonthly());
+        cfg.setFixedPriceDaily(60000);
+        cfg.setFixedPriceMonthly(500000);
+        tm.markPriceEra("Sau cap nhat lan 1 (base=10k, perStop=5k, daily=60k, monthly=500k)");
 
-        // ── 5. PHASE B: Phat hanh ve voi GIA MOI (sau khi cap nhat) ──
-        System.out.println("\n======== PHASE B: Ve mua SAU khi cap nhat gia ========");
-        Ticket newSingle  = tm.issueTicket(p1, TicketType.SINGLE,  3);
-        Ticket newDaily   = tm.issueTicket(p2, TicketType.DAILY,   0);
-        Ticket newMonthly = tm.issueTicket(p3, TicketType.MONTHLY, 0);
+        // ── 5. PHASE B: Phat hanh ve voi GIA MOI ──────────
+        tm.issueTicket(p1, TicketType.SINGLE,  3);
+        tm.issueTicket(p2, TicketType.DAILY,   0);
+        tm.issueTicket(p3, TicketType.MONTHLY, 0);
 
-        System.out.println("[Gia moi] SINGLE  = " + newSingle.getPrice());
-        System.out.println("[Gia moi] DAILY   = " + newDaily.getPrice());
-        System.out.println("[Gia moi] MONTHLY = " + newMonthly.getPrice());
-
-        // ── 6. Kiem tra revenue report ──────────────────────
-        System.out.println("\n======== REVENUE REPORT (tinh lai theo gia hien tai) ========");
-        tm.getRevenueReport("2026-06").forEach((type, revenue) -> {
-            if (revenue > 0)
-                System.out.printf("%-10s | %,.0f VND%n", type, revenue);
-        });
-
-        // ── 7. HeatMap data ────────────────────────────────
+        // ── 6. HeatMap data ────────────────────────────────
         for (int i = 0; i < 290; i++) s2.incrementCheckIn();
         for (int i = 0; i < 340; i++) s3.incrementCheckIn();
         HeatmapService hms = HeatmapService.getInstance();
         hms.analyzeRealtime(s2);
         hms.analyzeRealtime(s3);
 
-        // ── 8. VerifyService ───────────────────────────────
+        // ── 7. VerifyService ───────────────────────────────
         VerifyService vs = VerifyService.getInstance();
         vs.registerCitizen(new CitizenInfo("ID002", "Tran Thi B", LocalDate.of(2004, 1, 1), true,  false));
         vs.registerCitizen(new CitizenInfo("ID003", "Le Van C",   LocalDate.of(1958, 5, 10), false, false));
 
-        // ── 9. Khoi tao MVC ────────────────────────────────
+        // ── 8. Khoi tao MVC ────────────────────────────────
         Admin admin = new Admin("ADM01", "Nguyen Thi Admin", "admin123");
         if (!admin.login("admin123")) { System.err.println("Login failed!"); return; }
 
         AdminView view = new AdminView();
+
+        // [THEM MOI] - Truyen TicketManager vao AdminController de controller
+        // co the goi markPriceEra() moi khi Admin cap nhat gia tren UI
         AdminController controller = new AdminController(admin, view);
         view.setController(controller);
         controller.registerLine(line1);
         controller.registerLine(line2);
 
         view.show();
-
-//        System.out.println("\n======== HUONG DAN TEST TREN GIAO DIEN ========");
-//        System.out.println("1. Vao tab 'Cau hinh Gia ve' -> thay doi gia -> bam 'Cap nhat gia'");
-//        System.out.println("2. Vao tab 'Bao cao' -> bam 'Doanh thu theo loai ve'");
-//        System.out.println("   -> Dong 'Gia hien tai' se phan anh gia vua cap nhat");
-//        System.out.println("   -> Doanh thu duoc tinh lai theo gia moi (calcPrice)");
-//        System.out.println("   -> Ve Phase A (gia cu) va Phase B (gia moi) deu co mat");
     }
 }
