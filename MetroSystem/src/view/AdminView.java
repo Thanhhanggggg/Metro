@@ -501,22 +501,91 @@ public class AdminView extends JPanel {
 
 	public void showRevenueReport(Map<TicketType, Double> report) {
 		SwingUtilities.invokeLater(() -> {
-			if (report == null || report.isEmpty()) {
-				taReport.setText("Khong co du lieu doanh thu.");
-				return;
-			}
+			// [THEM MOI] - Lay bao cao phan nhom theo era thay vi flat report
+			Map<String, Map<TicketType, double[]>> eraReport =
+				TicketManager.getInstance().getRevenueReportByEra();
+ 
+			FareConfig cfg = FareConfig.getInstance();
+ 
 			StringBuilder sb = new StringBuilder();
-			sb.append("===== BAO CAO DOANH THU =====\n");
-			sb.append(String.format("%-20s | %s\n", "Loai ve", "Doanh thu (VND)"));
-			sb.append("--------------------------------\n");
-			double total = 0;
-			for (Map.Entry<TicketType, Double> entry : report.entrySet()) {
-				sb.append(String.format("%-20s | %,.0f\n", entry.getKey(), entry.getValue()));
-				total += entry.getValue();
+			sb.append("============================================================\n");
+			sb.append("               BAO CAO DOANH THU THEO GIAI DOAN GIA          \n");
+			sb.append("============================================================\n");
+			sb.append(String.format(
+				"Gia dang ap dung: Co ban=%,.0f | Moi tram=%,.0f | Ngay=%,.0f | Thang=%,.0f\n",
+				cfg.getBaseFare(), cfg.getFarePerStop(),
+				cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
+			sb.append("------------------------------------------------------------\n");
+ 
+			double grandTotalOld = 0;   // tong doanh thu theo gia goc
+			double grandTotalNew = 0;   // tong doanh thu theo gia hien tai
+			int    grandCount    = 0;
+			boolean anyData      = false;
+ 
+			if (eraReport == null || eraReport.isEmpty()) {
+				sb.append("  (Chua co ve nao duoc phat hanh)\n");
+			} else {
+				for (Map.Entry<String, Map<TicketType, double[]>> eraEntry : eraReport.entrySet()) {
+					String eraLabel                       = eraEntry.getKey();
+					Map<TicketType, double[]> typeMap     = eraEntry.getValue();
+ 
+					// --- Tieu de nhom era ---
+					sb.append("\n>> GIAI DOAN: ").append(eraLabel).append("\n");
+					sb.append(String.format("   %-10s | %-5s | %-14s | %-14s | %s\n",
+						"Loai ve", "So ve", "Gia goc (VND)", "Gia hien tai (VND)", "Chenh lech"));
+					sb.append("   -----------------------------------------------------------------\n");
+ 
+					double eraTotalOld = 0;
+					double eraTotalNew = 0;
+					int    eraCount    = 0;
+ 
+					for (Map.Entry<TicketType, double[]> typeEntry : typeMap.entrySet()) {
+						TicketType  type  = typeEntry.getKey();
+						double[]    stats = typeEntry.getValue(); // [soVe, tongGiaGoc, tongGiaHienTai]
+ 
+						int    soVe        = (int) stats[0];
+						double tongGiaGoc  = stats[1];
+						double tongGiaMoi  = stats[2];
+						double chenh       = tongGiaMoi - tongGiaGoc;
+						String cheNhStr    = chenh == 0 ? "Khong doi"
+						                  : chenh > 0   ? String.format("+%,.0f", chenh)
+						                                : String.format("%,.0f", chenh);
+ 
+						sb.append(String.format("   %-10s | %-5d | %,-14.0f | %,-18.0f | %s\n",
+							type, soVe, tongGiaGoc, tongGiaMoi, cheNhStr));
+ 
+						eraTotalOld += tongGiaGoc;
+						eraTotalNew += tongGiaMoi;
+						eraCount    += soVe;
+						anyData      = true;
+					}
+ 
+					// --- Subtotal cua nhom era ---
+					sb.append("   -----------------------------------------------------------------\n");
+					sb.append(String.format("   %-10s | %-5d | %,-14.0f | %,-18.0f |\n",
+						"Subtotal", eraCount, eraTotalOld, eraTotalNew));
+ 
+					grandTotalOld += eraTotalOld;
+					grandTotalNew += eraTotalNew;
+					grandCount    += eraCount;
+				}
 			}
-			sb.append("--------------------------------\n");
-			sb.append(String.format("%-20s | %,.0f\n", "TONG CONG", total));
-			sb.append("================================\n");
+ 
+			if (!anyData && (eraReport == null || eraReport.isEmpty())) {
+				// Da xu ly o tren
+			}
+ 
+			// --- Tong tat ca era ---
+			sb.append("\n============================================================\n");
+			sb.append(String.format("TONG CONG          | %-5d | %,-14.0f | %,-18.0f |\n",
+				grandCount, grandTotalOld, grandTotalNew));
+			double tongChenh = grandTotalNew - grandTotalOld;
+			sb.append(String.format("Chenh lech tong: %s\n",
+				tongChenh == 0 ? "Khong doi"
+				: tongChenh > 0 ? String.format("+%,.0f VND", tongChenh)
+				                : String.format("%,.0f VND", tongChenh)));
+			sb.append("============================================================\n");
+ 
 			taReport.setText(sb.toString());
 		});
 	}
