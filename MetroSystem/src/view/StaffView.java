@@ -8,7 +8,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-public class StaffView implements Observer {
+public class StaffView extends JPanel implements Observer {
 	private IController controller;
 
     private static final Color BLUE       = new Color(30, 90, 180);
@@ -16,7 +16,7 @@ public class StaffView implements Observer {
     private static final Color WHITE      = Color.WHITE;
     private static final Color BG         = new Color(245, 247, 250);
 
-    private JFrame frame;
+   // private JFrame frame;
     private JTabbedPane tabbedPane;
 
     // Tab 1: Kiem tra ve
@@ -49,13 +49,15 @@ public class StaffView implements Observer {
 
     //UI
     private void buildUI() {
-        frame = new JFrame("Station Staff Management");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 480);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
-
+//        frame = new JFrame("Station Staff Management");
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        frame.setSize(600, 480);
+//        frame.setLocationRelativeTo(null);
+//        frame.setLayout(new BorderLayout());
+    	
         // Header
+    	setLayout(new BorderLayout());
+    	
         JPanel header = new JPanel();
         header.setBackground(BLUE);
         header.setBorder(new EmptyBorder(12, 20, 12, 20));
@@ -63,7 +65,9 @@ public class StaffView implements Observer {
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(WHITE);
         header.add(title);
-        frame.add(header, BorderLayout.NORTH);
+        //frame.add(header, BorderLayout.NORTH);
+        add(header, BorderLayout.NORTH);
+ //       add(tabbedPane, BorderLayout.CENTER);
 
         // Tabs
         tabbedPane = new JTabbedPane();
@@ -73,7 +77,8 @@ public class StaffView implements Observer {
         tabbedPane.addTab("Hoàn vé",       buildTabRefund());
         tabbedPane.addTab("Báo cáo sự cố", buildTabFault());
         tabbedPane.addTab("Thông báo",      buildTabAlerts());
-        frame.add(tabbedPane, BorderLayout.CENTER);
+        add(tabbedPane, BorderLayout.CENTER);
+       // frame.add(tabbedPane, BorderLayout.CENTER);
     }
 
     //Tab 1- Kiem tra ve
@@ -238,7 +243,7 @@ public class StaffView implements Observer {
     // Hien thi loi chung
     public void showError(String message) {
         SwingUtilities.invokeLater(() ->
-            JOptionPane.showMessageDialog(frame, message, "Lỗi", JOptionPane.ERROR_MESSAGE));
+            JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE));
     }
 
     
@@ -255,7 +260,7 @@ public class StaffView implements Observer {
             // Tự chuyển sang tab thông báo nếu CRITICAL
             if (alert.getAlertLevel() == AlertLevel.CRITICAL) {
                 tabbedPane.setSelectedIndex(3);
-                JOptionPane.showMessageDialog(frame,
+                JOptionPane.showMessageDialog(this,
                     "KHẨN CẤP: Ga " + alert.getStation().getStationName()
                     + " đã quá tải " + String.format("%.0f%%", alert.getOccupancyRate() * 100),
                     "CẢNH BÁO KHẨN CẤP", JOptionPane.WARNING_MESSAGE);
@@ -304,7 +309,7 @@ public class StaffView implements Observer {
         return btn;
     }
 
-    public void show() {
-        SwingUtilities.invokeLater(() -> frame.setVisible(true));
-    }
+//    public void show() {
+//        SwingUtilities.invokeLater(() -> frame.setVisible(true));
+//    }
 }

@@ -100,7 +100,7 @@ public class HeatmapService implements Subject {
 	        if (level != AlertLevel.NORMAL) {
 	            latestAlert = new HeatmapAlert(station, rate, level);
 	            alertHistory.add(latestAlert);
-	            notify();
+	            notifyObserver();
 	        }
 	}
 

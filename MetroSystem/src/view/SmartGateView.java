@@ -11,15 +11,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-/**
- * SmartGateView – Java Swing UI for Smart Gate Management System
- * Pattern: MVC  |  Module: UC07 Check-in, UC08 Check-out,
- *                           UC09 Xác thực
- *
- * Style: matches StationStaff UI (blue header, tabbed panel, status bar)
- * Dependencies: only standard Java Swing + Metro package
- */
-public class SmartGateView extends JFrame {
+public class SmartGateView extends JPanel {
 
     // ─── Palette ─────────────────────────────────────────────
     private static final Color C_HEADER  = new Color(0,  82, 164);
@@ -38,7 +30,7 @@ public class SmartGateView extends JFrame {
     private final SmartGateController ctrl = new SmartGateController();
 
     // ─── Shared widgets ──────────────────────────────────────
-    private JLabel   lblClock, lblStatus;
+    private JLabel   lblStatus;
     private JPanel   pnlGates;
     private JTextArea taLog;
 
@@ -61,60 +53,12 @@ public class SmartGateView extends JFrame {
 
     // ─────────────────────────────────────────────────────────
     public SmartGateView() {
-        setTitle("Smart Gate Management System");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(980, 680);
-        setMinimumSize(new Dimension(860, 580));
-        setLocationRelativeTo(null);
-
-        JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(C_BG);
-        root.add(buildHeader(),    BorderLayout.NORTH);
-        root.add(buildBody(),      BorderLayout.CENTER);
-        root.add(buildStatusBar(), BorderLayout.SOUTH);
-        setContentPane(root);
-
-        startClock();
-        setVisible(true);
+    	setLayout(new BorderLayout());
+    	add(buildBody(),      BorderLayout.CENTER);
+    	add(buildStatusBar(), BorderLayout.SOUTH);
     }
 
-    // ═══════════════════════════════════════════════════════
-    //  HEADER
-    // ═══════════════════════════════════════════════════════
-    private JPanel buildHeader() {
-        JPanel h = new JPanel(new BorderLayout());
-        h.setBackground(C_HEADER);
-        h.setBorder(new EmptyBorder(14, 22, 14, 22));
-
-        // Left – icon + title
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
-        left.setOpaque(false);
-
-        JLabel ico = new JLabel();
-        ico.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 34));
-        ico.setForeground(C_WHITE);
-
-        JPanel titles = new JPanel(new GridLayout(2, 1, 0, 2));
-        titles.setOpaque(false);
-        JLabel t1 = new JLabel("SMART GATE MANAGEMENT");
-        t1.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        t1.setForeground(C_WHITE);
-        JLabel t2 = new JLabel("Metro Ticket & Gate Control System");
-        t2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        t2.setForeground(new Color(170, 200, 255));
-        titles.add(t1); titles.add(t2);
-        left.add(ico); left.add(titles);
-
-        // Right – clock
-        lblClock = new JLabel("", SwingConstants.RIGHT);
-        lblClock.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblClock.setForeground(C_WHITE);
-
-        h.add(left, BorderLayout.WEST);
-        h.add(lblClock, BorderLayout.EAST);
-        return h;
-    }
-
+    
     // ═══════════════════════════════════════════════════════
     //  BODY  (left sidebar + right tabs)
     // ═══════════════════════════════════════════════════════
@@ -446,31 +390,7 @@ public class SmartGateView extends JFrame {
         JOptionPane.showMessageDialog(this, msg, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
     }
 
-    private void startClock() {
-        new Timer(1000, e -> lblClock.setText(
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss  dd/MM/yyyy"))))
-                .start();
-    }
-
-    // ═══════════════════════════════════════════════════════
-    //  MAIN – seed demo data then launch
-    // ═══════════════════════════════════════════════════════
-    public static void main(String[] args) {
-        seedDemo();
-        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); }
-        catch (Exception ignored) {}
-        SwingUtilities.invokeLater(SmartGateView::new);
-    }
-
-    /**
-     * Tạo dữ liệu mẫu cho TicketManager để demo check-in/check-out.
-     * Chỉnh sửa các class bên dưới cho phù hợp với cách bạn instantiate Ticket con.
-     *
-     * Vé mẫu:
-     *   T001 – ActiveState  → có thể check-in
-     *   T002 – ActiveState  → có thể check-in
-     *   T003 – ActiveState  → có thể check-in
-     */
+    
     private static void seedDemo() {
         TicketManager tm = TicketManager.getInstance();
         System.out.println("[SmartGateView] Seed demo: add your Ticket objects to TicketManager here.");

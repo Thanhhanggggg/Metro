@@ -86,4 +86,7 @@ public class TicketManager {
             );
         }
     }
+    public List<Ticket> getAllTickets() {
+        return new ArrayList<>(tickets.values());
+    }
 }

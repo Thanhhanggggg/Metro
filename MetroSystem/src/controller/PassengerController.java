@@ -14,7 +14,10 @@ public class PassengerController implements IController {
         this.passenger = passenger;
         this.view = view;
     }
-    @Override
+    public PassengerController() {
+		// TODO Auto-generated constructor stub
+	}
+	@Override
     public void handleAction(String action, Object... params) {
         switch (action) {
         //UC01 - TÌM LỘ TRÌNH
@@ -215,5 +218,13 @@ public class PassengerController implements IController {
         view.setLines(lines);
         view.setStations(stations);
     }
+	public void setView(PassengerView view) {
+		this.view = view;
+	}
+	public void loadInitialData() {
+		// TODO Auto-generated method stub
+		
+	}
+	
     
 }

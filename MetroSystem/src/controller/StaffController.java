@@ -7,8 +7,8 @@ import view.*;
 
 public class StaffController implements IController {
 
-    private final StationStaff staff;
-    private final StaffView    view;
+    private StationStaff staff;
+    private StaffView    view;
 
     public StaffController(StationStaff staff, StaffView view) {
         this.staff = staff;
@@ -18,7 +18,11 @@ public class StaffController implements IController {
         HeatmapService.getInstance().attach(view);
     }
 
-    //  IController
+    public StaffController() {
+		// TODO Auto-generated constructor stub
+	}
+
+	//  IController
     @Override
     public void handleAction(String action, Object... params) {
         switch (action) {
@@ -121,4 +125,12 @@ public class StaffController implements IController {
         if (state instanceof RefundedState) return "REFUNDED — Đã hoàn tiền";
         return "Không xác định";
     }
+
+	public void setView(StaffView view) {
+		this.view = view;
+	}
+    
+    
+
+	
 }

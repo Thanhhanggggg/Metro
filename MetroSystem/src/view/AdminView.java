@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
 
-public class AdminView {
+public class AdminView extends JPanel {
 
 	private IController controller;
 
@@ -24,7 +24,7 @@ public class AdminView {
 	private static final Color RED_DARK = new Color(180, 0, 0);
 
 	// --- Frame chinh ---
-	private JFrame frame;
+	//private JFrame frame;
 	private JTabbedPane tabbedPane;
 
 	// =========================================================
@@ -79,13 +79,14 @@ public class AdminView {
 	// Xay dung giao dien chinh
 	// =========================================================
 	private void buildUI() {
-		frame = new JFrame("He Thong Quan Ly Metro - Admin");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(860, 600);
-		frame.setLocationRelativeTo(null);
-		frame.setLayout(new BorderLayout());
+//		frame = new JFrame("He Thong Quan Ly Metro - Admin");
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frame.setSize(860, 600);
+//		frame.setLocationRelativeTo(null);
+//		frame.setLayout(new BorderLayout());
 
 		// Header
+		setLayout(new BorderLayout());
 		JPanel header = new JPanel();
 		header.setBackground(BLUE);
 		header.setBorder(new EmptyBorder(14, 24, 14, 24));
@@ -93,7 +94,8 @@ public class AdminView {
 		title.setFont(new Font("Arial", Font.BOLD, 20));
 		title.setForeground(WHITE);
 		header.add(title);
-		frame.add(header, BorderLayout.NORTH);
+		add(header, BorderLayout.NORTH);
+//		frame.add(header, BorderLayout.NORTH);
 
 		// Tabs
 		tabbedPane = new JTabbedPane();
@@ -101,7 +103,8 @@ public class AdminView {
 		tabbedPane.addTab("Quan ly Tuyen & Ga", buildTabLineStation());
 		tabbedPane.addTab("Cau hinh Gia ve", buildTabFare());
 		tabbedPane.addTab("Bao cao", buildTabReport());
-		frame.add(tabbedPane, BorderLayout.CENTER);
+		add(tabbedPane, BorderLayout.CENTER);
+//		frame.add(tabbedPane, BorderLayout.CENTER);
 	}
 
 	// =========================================================
@@ -169,7 +172,7 @@ public class AdminView {
 				showError("Chua chon tuyen!");
 				return;
 			}
-			int c = JOptionPane.showConfirmDialog(frame, "Xac nhan xoa tuyen: " + selectedLine.getLineName() + "?",
+			int c = JOptionPane.showConfirmDialog(this, "Xac nhan xoa tuyen: " + selectedLine.getLineName() + "?",
 					"Xac nhan", JOptionPane.YES_NO_OPTION);
 			if (c == JOptionPane.YES_OPTION)
 				controller.handleAction("REMOVE_LINE", selectedLine);
@@ -259,7 +262,7 @@ public class AdminView {
 				showError("Chua chon ga!");
 				return;
 			}
-			int c = JOptionPane.showConfirmDialog(frame, "Xac nhan xoa ga: " + selectedStation.getStationName() + "?",
+			int c = JOptionPane.showConfirmDialog(this, "Xac nhan xoa ga: " + selectedStation.getStationName() + "?",
 					"Xac nhan", JOptionPane.YES_NO_OPTION);
 			if (c == JOptionPane.YES_OPTION)
 				controller.handleAction("REMOVE_STATION", selectedStation, selectedLine);
@@ -535,17 +538,17 @@ public class AdminView {
 	}
 
 	public void showError(String msg) {
-		SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(frame, msg, "Loi", JOptionPane.ERROR_MESSAGE));
+		SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, msg, "Loi", JOptionPane.ERROR_MESSAGE));
 	}
 
 	public void showInfo(String msg) {
 		SwingUtilities.invokeLater(
-				() -> JOptionPane.showMessageDialog(frame, msg, "Thong bao", JOptionPane.INFORMATION_MESSAGE));
+				() -> JOptionPane.showMessageDialog(this, msg, "Thong bao", JOptionPane.INFORMATION_MESSAGE));
 	}
 
-	public void show() {
-		SwingUtilities.invokeLater(() -> frame.setVisible(true));
-	}
+//	public void show() {
+//		SwingUtilities.invokeLater(() -> this.setVisible(true));
+//	}
 
 	// =========================================================
 	// Ho tro

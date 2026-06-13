@@ -3,15 +3,24 @@ package controller;
 import Metro.*;
 import java.util.*;
 
-/**
- * Controller cho module SmartGate (UC07, UC08, UC09, UC13)
- * Xử lý đầy đủ các trường hợp nhập mã vé trùng / sai trạng thái.
- */
+
 public class SmartGateController implements IController {
 
-    private List<SmartGate> gates    = new ArrayList<>();
-    private List<String>    scanLog  = new ArrayList<>();
+    // ── Hằng action ──────────────────────────────────────────────────────────
+    public static final String ACTION_CHECK_IN       = "CHECK_IN";
+    public static final String ACTION_CHECK_OUT      = "CHECK_OUT";
+    public static final String ACTION_VALIDATE       = "VALIDATE";
+    public static final String ACTION_GET_INFO       = "GET_INFO";
+    public static final String ACTION_GET_SCAN_LOG   = "GET_SCAN_LOG";
 
+    // ── State ─────────────────────────────────────────────────────────────────
+    private final List<SmartGate> gates   = new ArrayList<>();
+    private final List<String>    scanLog = new ArrayList<>();
+
+    /** Kết quả của lần gọi handleAction() gần nhất – dùng để UI lấy về. */
+    private String lastResult = "";
+
+    // ─────────────────────────────────────────────────────────────────────────
     public SmartGateController() {
         gates.add(new SmartGate("G001", GateType.IN));
         gates.add(new SmartGate("G002", GateType.IN));
@@ -19,19 +28,107 @@ public class SmartGateController implements IController {
         gates.add(new SmartGate("G004", GateType.OUT));
     }
 
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
+    //  IController – handleAction
+    //  Dispatch mọi hành động qua một điểm duy nhất.
+    //
+    //  Cú pháp params:
+    //    CHECK_IN   (ticketId)
+    //    CHECK_OUT  (ticketId)
+    //    VALIDATE   (gateId, ticketId)
+    //    GET_INFO   (ticketId)
+    //    GET_SCAN_LOG  (không có param)
+    // ═══════════════════════════════════════════════════════════════════════
+    @Override
+    public void handleAction(String action, Object... params) {
+        if (action == null) {
+            lastResult = "FAIL:Action không được null.";
+            return;
+        }
+
+        switch (action.toUpperCase()) {
+
+            case ACTION_CHECK_IN -> {
+                if (!hasParams(params, 1)) { lastResult = "FAIL:CHECK_IN cần tham số ticketId."; return; }
+                lastResult = checkIn(params[0].toString());
+            }
+
+            case ACTION_CHECK_OUT -> {
+                if (!hasParams(params, 1)) { lastResult = "FAIL:CHECK_OUT cần tham số ticketId."; return; }
+                lastResult = checkOut(params[0].toString());
+            }
+
+            case ACTION_VALIDATE -> {
+                if (!hasParams(params, 2)) { lastResult = "FAIL:VALIDATE cần tham số gateId, ticketId."; return; }
+                lastResult = validateTicket(params[0].toString(), params[1].toString());
+            }
+
+            case ACTION_GET_INFO -> {
+                if (!hasParams(params, 1)) { lastResult = "FAIL:GET_INFO cần tham số ticketId."; return; }
+                lastResult = getTicketInfo(params[0].toString());
+            }
+
+            case ACTION_GET_SCAN_LOG -> {
+                lastResult = String.join("\n", scanLog);
+            }
+
+            default -> lastResult = "FAIL:Action không hỗ trợ: " + action;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  IController – validate
+    //  Kiểm tra input hợp lệ trước khi thực thi action.
+    //
+    //  Nhận vào:
+    //    - String ticketId          → kiểm tra vé tồn tại & đang active
+    //    - String[] { gateId, ticketId } → kiểm tra cả cổng lẫn vé
+    //    - SmartGate                → kiểm tra cổng tồn tại trong danh sách
+    //    - Ticket                   → kiểm tra vé hợp lệ trực tiếp
+    // ═══════════════════════════════════════════════════════════════════════
+    @Override
+    public boolean validate(Object input) {
+        if (input == null) return false;
+
+        // Kiểm tra Ticket object trực tiếp
+        if (input instanceof Ticket ticket) {
+            return ticket.isValid();
+        }
+
+        // Kiểm tra SmartGate object
+        if (input instanceof SmartGate gate) {
+            return gates.stream().anyMatch(g -> g.getGateId().equals(gate.getGateId()));
+        }
+
+        // Kiểm tra ticketId (String)
+        if (input instanceof String ticketId) {
+            Ticket ticket = TicketManager.getInstance().findById(ticketId);
+            return ticket != null && ticket.isValid();
+        }
+
+        // Kiểm tra String[] { gateId, ticketId }
+        if (input instanceof String[] arr && arr.length >= 2) {
+            String gateId    = arr[0];
+            String ticketId  = arr[1];
+            SmartGate gate   = findGateById(gateId);
+            Ticket    ticket = TicketManager.getInstance().findById(ticketId);
+            return gate != null && ticket != null && ticket.isValid();
+        }
+
+        return false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
     //  UC07 – Check-in
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     public String checkIn(String ticketId) {
         Ticket ticket = TicketManager.getInstance().findById(ticketId);
 
-        // Vé không tồn tại
         if (ticket == null)
             return "FAIL:Không tìm thấy vé: " + ticketId;
 
         TicketState state = ticket.getState();
 
-        // ── Xử lý nhập 2 lần / sai trạng thái ──────────────
         if (state instanceof UsedState)
             return "WARN:Vé " + ticketId + " đã được check-in rồi!\n"
                  + "→ Vé đang chờ check-out, không thể check-in lại.";
@@ -42,7 +139,6 @@ public class SmartGateController implements IController {
         if (state instanceof RefundedState)
             return "FAIL:Vé " + ticketId + " đã được hoàn trả, không thể sử dụng.";
 
-        // ── ActiveState → check-in hợp lệ ───────────────────
         if (!ticket.isValid())
             return "FAIL:Vé không hợp lệ (trạng thái: " + state.getClass().getSimpleName() + ")";
 
@@ -53,19 +149,17 @@ public class SmartGateController implements IController {
         return msg;
     }
 
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     //  UC08 – Check-out
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     public String checkOut(String ticketId) {
         Ticket ticket = TicketManager.getInstance().findById(ticketId);
 
-        // Vé không tồn tại
         if (ticket == null)
             return "FAIL:Không tìm thấy vé: " + ticketId;
 
         TicketState state = ticket.getState();
 
-        // ── Xử lý nhập 2 lần / sai trạng thái ──────────────
         if (state instanceof ActiveState)
             return "WARN:Vé " + ticketId + " chưa check-in!\n"
                  + "→ Hành khách phải check-in trước khi check-out.";
@@ -77,7 +171,6 @@ public class SmartGateController implements IController {
         if (state instanceof RefundedState)
             return "FAIL:Vé " + ticketId + " đã được hoàn trả, không thể sử dụng.";
 
-        // ── UsedState → check-out hợp lệ ────────────────────
         if (!(state instanceof UsedState))
             return "FAIL:Trạng thái không hợp lệ: " + state.getClass().getSimpleName();
 
@@ -88,9 +181,9 @@ public class SmartGateController implements IController {
         return msg;
     }
 
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     //  UC09 – Xác thực hành trình qua cổng
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     public String validateTicket(String gateId, String ticketId) {
         SmartGate gate = findGateById(gateId);
         if (gate == null) return "FAIL:Không tìm thấy cổng: " + gateId;
@@ -109,13 +202,12 @@ public class SmartGateController implements IController {
         return msg;
     }
 
-
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     //  Helpers
-    // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════
     public String getTicketInfo(String ticketId) {
         Ticket ticket = TicketManager.getInstance().findById(ticketId);
-        if (ticket == null) return "";
+        if (ticket == null) return "FAIL:Không tìm thấy vé: " + ticketId;
         return "Vé ID      : " + ticket.getTicketId()                          + "\n"
              + "Loại       : " + ticket.getType()                              + "\n"
              + "Giá        : " + ticket.getPrice()                 + " VND"   + "\n"
@@ -124,8 +216,11 @@ public class SmartGateController implements IController {
              + "Hợp lệ     : " + (ticket.isValid() ? "Có" : "Không");
     }
 
-    public List<SmartGate> getGates()   { return gates; }
-    public List<String>    getScanLog() { return scanLog; }
+    /** Kết quả của handleAction() gần nhất. */
+    public String getLastResult()        { return lastResult; }
+
+    public List<SmartGate> getGates()    { return gates; }
+    public List<String>    getScanLog()  { return scanLog; }
     public String[] getGateIds() {
         return gates.stream().map(SmartGate::getGateId).toArray(String[]::new);
     }
@@ -134,15 +229,8 @@ public class SmartGateController implements IController {
         return gates.stream().filter(g -> g.getGateId().equals(id)).findFirst().orElse(null);
     }
 
-	@Override
-	public void handleAction(String action, Object... params) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean validate(Object input) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    /** Kiểm tra params đủ số lượng tối thiểu. */
+    private boolean hasParams(Object[] params, int min) {
+        return params != null && params.length >= min && params[0] != null;
+    }
 }

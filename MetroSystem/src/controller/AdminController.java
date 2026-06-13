@@ -6,8 +6,8 @@ import java.util.*;
 
 public class AdminController implements IController {
 
-	private final Admin admin;
-	private final AdminView view;
+	private Admin admin;
+	private AdminView view;
 
 	// Du lieu tuyen / ga luu trong bo nho (demo)
 	private final List<MetroLine> metroLines = new ArrayList<>();
@@ -15,6 +15,12 @@ public class AdminController implements IController {
 	public AdminController(Admin admin, AdminView view) {
 		this.admin = admin;
 		this.view = view;
+		seedData();
+	}
+
+	public AdminController() {
+		// TODO Auto-generated constructor stub
+		this.admin = new Admin("A001", "Trần Văn Lâm", "12345678");
 		seedData();
 	}
 
@@ -262,4 +268,9 @@ public class AdminController implements IController {
 		// TODO Auto-generated method stub
 
 	}
+
+	public void setView(AdminView view) {
+		this.view = view;
+	}
+	
 }
