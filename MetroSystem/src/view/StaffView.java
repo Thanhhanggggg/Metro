@@ -301,6 +301,8 @@ public class StaffView extends JPanel implements Observer {
         btn.setBorder(new EmptyBorder(8, 20, 8, 20));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setOpaque(true);
+        btn.setBorderPainted(false);
         // Hover effect
         btn.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btn.setBackground(BLUE_LIGHT); }
