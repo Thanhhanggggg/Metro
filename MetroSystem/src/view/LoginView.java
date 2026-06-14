@@ -176,7 +176,7 @@ public class LoginView {
 
             case "ADMIN": {
                 AdminView view = new AdminView();
-                AdminController ctrl = new AdminController();
+                AdminController ctrl = new AdminController(main.Main.ADMIN, view, main.Main.METRO_LINES);
                 ctrl.setView(view);
                 view.setController(ctrl);
                 return view;
