@@ -129,20 +129,17 @@ public class FareConfig {
 			System.out.println("So tram khong hop le: " + stops);
 			return 0;
 		}
-//		double rawFare;
-        double rawFare = Math.min(baseFare + (stops * farePerStop), maxFare);
-//		if (stops <= 3) {
-//			rawFare = 10000; // 1 - 3 tram
-//		} else if (stops <= 6) {
-//			rawFare = 15000; // 4 - 6 tram
-//		} else if (stops <= 9) {
-//			rawFare = 20000; // 7 - 9 tram
-//		} else {
-//			rawFare = 25000; // 10 tram tro len
-//		}
-		
+		double rawFare;
+	    if (stops == 1) {
+	        rawFare = baseFare; // Đi 1 ga lấy giá cơ bản
+	    } else {
+	        rawFare = baseFare+(stops * farePerStop); // Đi nhiều hơn thì tính theo giá mỗi trạm
+	    }
+	    
+	    // Giới hạn giá tối đa không vượt quá maxFare
+	    rawFare = Math.min(rawFare, maxFare);
 		double rate = discountRate.getOrDefault(passengerType, 1.0);
-		double finalFare = rawFare * rate;
+		double finalFare =rawFare * rate;
 
 		System.out.println("Tinh gia " + stops + " tram | " + passengerType + " | " + (int) rawFare + " x "
 				+ (int) (rate * 100) + "% = " + (int) finalFare + " VND");
