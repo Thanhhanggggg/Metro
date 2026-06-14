@@ -154,12 +154,10 @@ public class LoginView {
 
         case "PASSENGER": {
             PassengerView view = new PassengerView();
-            
-            Passenger passenger = main.Main.PASSENGERS.get(0); // đang lấy p1, muốn hành khách khác tăng số phần get
-            
+            Passenger passenger = main.Main.PASSENGERS.get(0);
             PassengerController ctrl = new PassengerController();
-            ctrl.setPassenger(passenger); 
-            ctrl.setView(view);
+            ctrl.setView(view);           // view assigned FIRST
+            ctrl.setPassenger(passenger); // passenger second
             view.setController(ctrl);
             ctrl.loadInitialData();
             return view;
@@ -178,12 +176,11 @@ public class LoginView {
             }
 
             case "ADMIN": {
-                AdminView view = new AdminView();
-                AdminController ctrl = new AdminController();
-                ctrl.setView(view);
-                view.setController(ctrl);
-                return view;
-            }
+            	  AdminView view = new AdminView();
+            	    AdminController ctrl = new AdminController(main.Main.ADMIN, view, main.Main.METRO_LINES);
+            	    view.setController(ctrl);
+            	    return view;
+            	}
 
             default:
                 return null;
