@@ -10,7 +10,10 @@ public class MetroEventBus {
         STATION_ADDED, STATION_UPDATED, STATION_REMOVED,
         FARE_UPDATED, DISCOUNT_UPDATED,
         GATE_FAULT, GATE_ENABLED,
-        TICKET_ISSUED, TICKET_REFUNDED
+        TICKET_ISSUED, TICKET_REFUNDED,
+        CHECKIN_UPDATED,
+        
+        
     }
 
     private static MetroEventBus instance;
