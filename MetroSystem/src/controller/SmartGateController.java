@@ -17,7 +17,7 @@ public class SmartGateController implements IController {
 
     // ── State ─────────────────────────────────────────────────────────────────
     private final List<String>    scanLog = new ArrayList<>();
-
+    private List<MetroLine> metroLines = new ArrayList<>();
     /** Kết quả của lần gọi handleAction() gần nhất – dùng để UI lấy về. */
     private String lastResult = "";
 
@@ -26,6 +26,10 @@ public class SmartGateController implements IController {
     	 MetroEventBus bus = MetroEventBus.getInstance();
     	 bus.subscribe(Event.GATE_FAULT,   payload -> onGateFault((String) payload));
     	 bus.subscribe(Event.GATE_ENABLED, payload -> onGateEnabled((String) payload));
+    }
+    public SmartGateController(List<MetroLine> sharedLines) {
+        this();
+        this.metroLines = sharedLines;
     }
     private void onGateFault(String gateId) {
         // GateRegistry already updated by StaffController; just log if needed.
@@ -40,6 +44,36 @@ public class SmartGateController implements IController {
         addGate("G002", GateType.IN);
         addGate("G003", GateType.OUT);
         addGate("G004", GateType.OUT);
+
+        // FIX: truoc day cac cong duoc tao ma khong gan Station nao ca
+        // (getStation() luon tra ve null) -> checkIn()/checkOut() khong
+        // bao gio tang/giam duoc checkInCount cua ga, va Admin khong
+        // nhan duoc CHECKIN_UPDATED de refresh cot "Hien tai".
+        // Gan tat ca cong vao 1 ga mac dinh (ga dau tuyen dau tien)
+        // de mo phong 1 cum cong ra/vao cua cung 1 nha ga.
+        Station defaultStation = resolveDefaultStation();
+        if (defaultStation != null) {
+            assignStation("G001", defaultStation);
+            assignStation("G002", defaultStation);
+            assignStation("G003", defaultStation);
+            assignStation("G004", defaultStation);
+        }
+    }
+
+    /**
+     * Lay ga mac dinh de gan cho cum cong SmartGate (G001-G004).
+     * Uu tien danh sach tuyen duoc truyen vao controller (metroLines),
+     * neu rong thi fallback sang danh sach tuyen toan cuc cua he thong
+     * (main.Main.METRO_LINES) - day la danh sach AdminView dang hien thi.
+     */
+    private Station resolveDefaultStation() {
+        List<MetroLine> lines = (metroLines != null && !metroLines.isEmpty())
+                ? metroLines
+                : main.Main.METRO_LINES;
+        if (lines == null || lines.isEmpty()) return null;
+        List<Station> stations = lines.get(0).getStations();
+        if (stations.isEmpty()) return null;
+        return stations.get(0);
     }
     public String addGate(String gateId, GateType type) {
         if (GateRegistry.getInstance().exists(gateId))
@@ -47,7 +81,27 @@ public class SmartGateController implements IController {
         GateRegistry.getInstance().register(new SmartGate(gateId, type));
         return "OK:Đã thêm cổng " + gateId;
     }
-
+    public String addGate(String gateId, GateType type, Station station) {
+        if (GateRegistry.getInstance().exists(gateId))
+            return "FAIL:Cổng " + gateId + " đã tồn tại!";
+        GateRegistry.getInstance().register(new SmartGate(gateId, type, station));
+        return "OK:Đã thêm cổng " + gateId + " tại ga " + station.getStationName();
+    }
+    /** Gán station cho cổng đã tồn tại */
+    public String assignStation(String gateId, Station station) {
+        SmartGate gate = findGateById(gateId);
+        if (gate == null) return "FAIL:Không tìm thấy cổng: " + gateId;
+        gate.setStation(station);
+        return "OK:Đã gán ga " + station.getStationName() + " cho cổng " + gateId;
+    }
+ 
+    /** Tìm Station theo tên trong danh sách tuyến đang quản lý */
+    public Station findStationByName(String name) {
+        for (MetroLine line : metroLines)
+            for (Station s : line.getStations())
+                if (s.getStationName().equalsIgnoreCase(name)) return s;
+        return null;
+    }
     public String removeGate(String gateId) {
         boolean removed = GateRegistry.getInstance().remove(gateId);
         return removed ? "OK:Đã xóa cổng " + gateId
@@ -169,9 +223,20 @@ public class SmartGateController implements IController {
             return "FAIL:Vé không hợp lệ (trạng thái: " + state.getClass().getSimpleName() + ")";
 
         ticket.checkIn();
+
+        // Cập nhật số hành khách tại ga → Admin thấy cột "Hiện tại" tăng
+        SmartGate inGate = findActiveGateByType(GateType.IN);
+        if (inGate != null && inGate.getStation() != null) {
+            Station station = inGate.getStation();
+            station.incrementCheckIn();
+            HeatmapService.getInstance().analyzeRealtime(station);
+            // FIX: phai publish thi AdminView (da subscribe san) moi
+            // refresh lai bang "Hien tai" ngay lap tuc.
+            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, station);
+        }
+
         String msg = "OK:Check-in thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName()
-                   + "\n" + buildTicketInfo(ticket);
+                   + " → " + ticket.getState().getClass().getSimpleName();
         scanLog.add("[CHECK-IN] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -202,9 +267,20 @@ public class SmartGateController implements IController {
             return "FAIL:Trạng thái không hợp lệ: " + state.getClass().getSimpleName();
 
         ticket.checkOut();
+
+        // Giảm số hành khách khi ra khỏi ga
+        SmartGate outGate = findActiveGateByType(GateType.OUT);
+        if (outGate != null && outGate.getStation() != null) {
+            Station station = outGate.getStation();
+            station.decrementCheckIn();
+            HeatmapService.getInstance().analyzeRealtime(station);
+            // FIX: phai publish thi AdminView (da subscribe san) moi
+            // refresh lai bang "Hien tai" ngay lap tuc.
+            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, station);
+        }
+
         String msg = "OK:Check-out thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName()
-                   + "\n" + buildTicketInfo(ticket);
+                   + " → " + ticket.getState().getClass().getSimpleName();
         scanLog.add("[CHECK-OUT] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -264,28 +340,11 @@ public class SmartGateController implements IController {
     }
     public void clearLog() {
         scanLog.clear();
-        
     }
-    private String buildTicketInfo(Ticket ticket) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("=================================\n");
-        sb.append("Loại vé    : ").append(ticket.getType()).append("\n");
-        sb.append("Trạng thái : ").append(ticket.getState().getDescription()).append("\n");
-
-        if (ticket instanceof DayPass dp) {
-            boolean stillToday = java.time.LocalDate.now().equals(dp.getValidDate());
-            sb.append("Hiệu lực   : Hôm nay (").append(java.time.LocalDate.now()).append(")")
-              .append(stillToday ? " Còn hiệu lực" : " Hết hạn");
-
-        } else if (ticket instanceof MonthlyPass mp) {
-            boolean notExpired = java.time.LocalDate.now().isBefore(mp.getValidUntil());
-            sb.append("Hết hạn    : ").append(mp.getValidUntil()).append("\n");
-            sb.append("Còn hiệu lực: ").append(notExpired ? " Có" : " Không");
-
-        } else if (ticket instanceof SingleTrip st) {
-            String trangThai = (ticket.getState() instanceof ExpiredState) ? " Đã sử dụng" : " Còn hiệu lực";
-            sb.append("Còn hiệu lực: ").append(trangThai);
-        }
-        return sb.toString();
+    /** Tìm cổng đầu tiên còn active theo loại IN/OUT (fallback khi không biết gateId cụ thể) */
+    private SmartGate findActiveGateByType(GateType type) {
+        return GateRegistry.getInstance().getAll().stream()
+            .filter(g -> g.getType() == type && g.isActive() && g.getStation() != null)
+            .findFirst().orElse(null);
     }
 }
