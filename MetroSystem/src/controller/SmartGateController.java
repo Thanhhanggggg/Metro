@@ -230,8 +230,6 @@ public class SmartGateController implements IController {
             Station station = inGate.getStation();
             station.incrementCheckIn();
             HeatmapService.getInstance().analyzeRealtime(station);
-            // FIX: phai publish thi AdminView (da subscribe san) moi
-            // refresh lai bang "Hien tai" ngay lap tuc.
             MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, station);
         }
 
@@ -268,17 +266,19 @@ public class SmartGateController implements IController {
 
         ticket.checkOut();
 
-        // Giảm số hành khách khi ra khỏi ga
-        SmartGate outGate = findActiveGateByType(GateType.OUT);
-        if (outGate != null && outGate.getStation() != null) {
-            Station station = outGate.getStation();
-            station.decrementCheckIn();
-            HeatmapService.getInstance().analyzeRealtime(station);
-            // FIX: phai publish thi AdminView (da subscribe san) moi
-            // refresh lai bang "Hien tai" ngay lap tuc.
-            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, station);
+     // Giảm ga xuất phát
+        SmartGate inGate = findActiveGateByType(GateType.IN);
+        if (inGate != null && inGate.getStation() != null) {
+            inGate.getStation().decrementCheckIn();
+            HeatmapService.getInstance().analyzeRealtime(inGate.getStation());
+            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, inGate.getStation());
         }
-
+        // Tăng ga đích
+        if (ticket instanceof SingleTrip st && st.getDestination() != null) {
+            st.getDestination().incrementCheckIn();
+            HeatmapService.getInstance().analyzeRealtime(st.getDestination());
+            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, st.getDestination());
+        }
         String msg = "OK:Check-out thành công! Vé " + ticketId
                    + " → " + ticket.getState().getClass().getSimpleName();
         scanLog.add("[CHECK-OUT] " + msg.replace("OK:", ""));
