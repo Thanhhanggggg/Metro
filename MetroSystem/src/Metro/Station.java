@@ -68,13 +68,16 @@ public class Station {
 	public int getCapacity() {
 		return capacity;
 	}
+
+
 	public boolean isTransfer() {
 		return isTransfer;
 	}
-	public String toString() {
-		return stationName;
-	}
 
+	@Override
+	public String toString() {
+	    return stationName; 
+	}
 	//PHUONG THUC METHOL
 	public boolean isOpen() {
 		boolean lineActive = (metroLine != null) && (metroLine.getStatus() == LineStatus.ACTIVE);
@@ -118,7 +121,7 @@ public class Station {
 	}
 	
 	//Giam so hanh khach khi co nguoi check out
-	public void decrementCheckin() {
+	public void decrementCheckIn() {
 		if (checkInCount > 0) {
             checkInCount--;
             System.out.println("[" + stationName + "] Check-out: "
@@ -253,12 +256,12 @@ public class Station {
 	        gaTangGiam.incrementCheckIn(); // 3
 	        System.out.println("Sau 3 check-in  -> checkInCount = " + gaTangGiam.getCheckInCount()); // 3
 
-	        gaTangGiam.decrementCheckin();
+	        gaTangGiam.incrementCheckIn();
 	        System.out.println("Sau 1 check-out -> checkInCount = " + gaTangGiam.getCheckInCount()); // 2
 
-	        gaTangGiam.decrementCheckin();
-	        gaTangGiam.decrementCheckin();
-	        gaTangGiam.decrementCheckin(); // goi du thua, kiem tra khong xuong am
+	        gaTangGiam.incrementCheckIn();
+	        gaTangGiam.incrementCheckIn();
+	        gaTangGiam.incrementCheckIn(); // goi du thua, kiem tra khong xuong am
 	        System.out.println("Sau check-out du thua -> checkInCount = " + gaTangGiam.getCheckInCount()); // 0
 
 	        // ------------------------------------------------
