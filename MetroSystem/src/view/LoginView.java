@@ -152,15 +152,18 @@ public class LoginView {
     private JPanel createViewPanel(String role) {
         switch (role) {
 
-            case "PASSENGER": {
-                PassengerView view = new PassengerView();
-                PassengerController ctrl = new PassengerController();
-                view.setController(ctrl);
-                ctrl.setView(view);
-//                ctrl.loadInitialData();
-                return view;
-            }
-
+        case "PASSENGER": {
+            PassengerView view = new PassengerView();
+            
+            Passenger passenger = main.Main.PASSENGERS.get(0); // đang lấy p1, muốn hành khách khác tăng số phần get
+            
+            PassengerController ctrl = new PassengerController();
+            ctrl.setPassenger(passenger); 
+            ctrl.setView(view);
+            view.setController(ctrl);
+            ctrl.loadInitialData();
+            return view;
+        }
             case "STAFF": {
                 StaffView view = new StaffView();
                 StaffController ctrl = new StaffController();
@@ -176,7 +179,7 @@ public class LoginView {
 
             case "ADMIN": {
                 AdminView view = new AdminView();
-                AdminController ctrl = new AdminController(main.Main.ADMIN, view, main.Main.METRO_LINES);
+                AdminController ctrl = new AdminController();
                 ctrl.setView(view);
                 view.setController(ctrl);
                 return view;
