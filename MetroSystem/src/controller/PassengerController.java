@@ -18,6 +18,9 @@ public class PassengerController implements IController {
     public PassengerController() {
 		// TODO Auto-generated constructor stub
 	}
+    public void setPassenger(Passenger passenger) {
+        this.passenger = passenger;
+    }
 	@Override
     public void handleAction(String action, Object... params) {
         switch (action) {
@@ -95,6 +98,10 @@ public class PassengerController implements IController {
     // - Phát hành vé
     // ==================================================
     private void handleBuyTicket(Station from,Station to,TicketType type) {
+//    	 if (passenger == null) {
+//    	        view.showBuyResult("Lỗi: Chưa đăng nhập hành khách.");
+//    	        return;
+//    	    }
         if (from == null || to == null) {
             view.showBuyResult("Vui lòng chọn ga đi và ga đến.");
             return;
@@ -234,10 +241,6 @@ public class PassengerController implements IController {
 	    view.setLines(lines);
 	    view.setStations(stations);
 	}
-	public void setPassenger(Passenger passenger) {
-		this.passenger = passenger;
 	}
-	
-}
 	
     
