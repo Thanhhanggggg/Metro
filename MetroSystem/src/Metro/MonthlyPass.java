@@ -20,7 +20,7 @@ public class MonthlyPass extends Ticket {
     }
     @Override
     public boolean isValid() {
-        return LocalDate.now().isBefore(validUntil) && rideCount < maxRides && getState().isValid();
+    	return LocalDate.now().isBefore(validUntil) && getState().isValid();
     }
     @Override
     public double calcPrice(TicketType type) {
@@ -31,5 +31,19 @@ public class MonthlyPass extends Ticket {
     }
     public boolean coverLine(MetroLine line) {
         return validLines.contains(line);
+    }
+    public void onCheckOut() {
+        if (!LocalDate.now().isBefore(validUntil)) {
+            setState(new ExpiredState());
+            setStatus(TicketStatus.EXPIRED);
+            System.out.println("MonthlyPass hết hạn.");
+        } else {
+            setState(new ActiveState());
+            setStatus(TicketStatus.ACTIVE);
+            System.out.println("MonthlyPass check-out: còn hạn đến " + validUntil);
+        }
+    }
+    public LocalDate getValidUntil() {
+        return validUntil;
     }
 }

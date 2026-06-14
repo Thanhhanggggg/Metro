@@ -33,4 +33,7 @@ public class SingleTrip extends Ticket {
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiredAt);
     }
+    public LocalDateTime getExpiredAt() {
+        return expiredAt;
+    }
 }

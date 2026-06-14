@@ -25,4 +25,13 @@ public class DayPass extends Ticket {
     public void incrementRide() {
         ridesUsed++;
     }
+    public void onCheckOut() {
+        incrementRide();
+        setState(new ActiveState());
+        setStatus(TicketStatus.ACTIVE);
+        System.out.println("DayPass check-out: lượt " + ridesUsed + " | Vé vẫn active cả ngày.");
+    }
+    public LocalDate getValidDate() {
+        return validDate;
+    }
 }

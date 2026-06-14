@@ -170,7 +170,8 @@ public class SmartGateController implements IController {
 
         ticket.checkIn();
         String msg = "OK:Check-in thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName();
+                   + " → " + ticket.getState().getClass().getSimpleName()
+                   + "\n" + buildTicketInfo(ticket);
         scanLog.add("[CHECK-IN] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -202,7 +203,8 @@ public class SmartGateController implements IController {
 
         ticket.checkOut();
         String msg = "OK:Check-out thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName();
+                   + " → " + ticket.getState().getClass().getSimpleName()
+                   + "\n" + buildTicketInfo(ticket);
         scanLog.add("[CHECK-OUT] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -262,5 +264,28 @@ public class SmartGateController implements IController {
     }
     public void clearLog() {
         scanLog.clear();
+        
+    }
+    private String buildTicketInfo(Ticket ticket) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=================================\n");
+        sb.append("Loại vé    : ").append(ticket.getType()).append("\n");
+        sb.append("Trạng thái : ").append(ticket.getState().getDescription()).append("\n");
+
+        if (ticket instanceof DayPass dp) {
+            boolean stillToday = java.time.LocalDate.now().equals(dp.getValidDate());
+            sb.append("Hiệu lực   : Hôm nay (").append(java.time.LocalDate.now()).append(")")
+              .append(stillToday ? " Còn hiệu lực" : " Hết hạn");
+
+        } else if (ticket instanceof MonthlyPass mp) {
+            boolean notExpired = java.time.LocalDate.now().isBefore(mp.getValidUntil());
+            sb.append("Hết hạn    : ").append(mp.getValidUntil()).append("\n");
+            sb.append("Còn hiệu lực: ").append(notExpired ? " Có" : " Không");
+
+        } else if (ticket instanceof SingleTrip st) {
+            String trangThai = (ticket.getState() instanceof ExpiredState) ? " Đã sử dụng" : " Còn hiệu lực";
+            sb.append("Còn hiệu lực: ").append(trangThai);
+        }
+        return sb.toString();
     }
 }

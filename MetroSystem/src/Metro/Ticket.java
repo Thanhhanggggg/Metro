@@ -73,11 +73,19 @@ public abstract class Ticket {
     }
     // State Pattern
     public void checkIn() {
-        if(state instanceof ActiveState) {
+    	if (!isValid()) {
+            setState(new ExpiredState());
+            setStatus(TicketStatus.EXPIRED);
+            System.out.println("Vé không còn hiệu lực, không thể check-in.");
+            return;
+        }
+        if (state instanceof UsedState) {
+            System.out.println("Vé đang trong hành trình, vui lòng check-out trước!");
+            return;
+        }
+        if (state instanceof ActiveState) {
             state.handle(this);
             status = TicketStatus.USED;
-        } else {
-            System.out.println( "Ticket already checked in!");
         }
     }
     public void checkOut() {
@@ -121,5 +129,10 @@ public abstract class Ticket {
     @Override
     public String toString() {
         return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";
+    }
+    public void onCheckOut() {
+        setState(new ExpiredState());
+        setStatus(TicketStatus.EXPIRED);
+        System.out.println("Ticket expired after check-out.");
     }
 }

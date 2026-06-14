@@ -68,12 +68,12 @@ public class Station {
 	public int getCapacity() {
 		return capacity;
 	}
-
-
 	public boolean isTransfer() {
 		return isTransfer;
 	}
-
+	public String toString() {
+		return stationName;
+	}
 
 	//PHUONG THUC METHOL
 	public boolean isOpen() {
