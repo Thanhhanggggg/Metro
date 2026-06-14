@@ -24,6 +24,8 @@ import java.time.LocalDate;
  */
 public class Main {
 
+	public static final java.util.List<MetroLine> METRO_LINES = new java.util.ArrayList<>();
+    public static final Admin ADMIN = new Admin("A001", "Tran Van Lam", "12345678");
     public static void main(String[] args) {
         // 1. Khởi tạo dữ liệu mẫu cho toàn hệ thống
         seedMetroData();
@@ -58,6 +60,13 @@ public class Main {
         Station s7 = new Station("S12", "Pham Van Hai", line2, 300);
         Station s8 = new Station("S13", "Tham Luong",   line2, 400);
         line2.addStation(s6); line2.addStation(s7); line2.addStation(s8);
+        // Thêm vào list dùng chung
+        METRO_LINES.add(line1);
+        METRO_LINES.add(line2);
+
+        // Đăng ký vào admin
+        ADMIN.registerLine(line1);
+        ADMIN.registerLine(line2);
  
         // ── 2. Hanh khach ──────────────────────────────────────
         Passenger p1 = new Passenger("P001", "Nguyen Van A", PassengerType.NORMAL,  "ID001", 500000);
