@@ -223,9 +223,16 @@ public class PassengerController implements IController {
 		this.view = view;
 	}
 	public void loadInitialData() {
-	    this.passenger = main.Main.passenger;
-	    view.setLines(main.Main.lines);
-	    view.setStations(main.Main.stations);
+	    List<MetroLine> lines = main.Main.METRO_LINES;
+
+	    // Gom tất cả ga từ các tuyến
+	    List<Station> stations = new ArrayList<>();
+	    for (MetroLine line : lines) {
+	        stations.addAll(line.getStations());
+	    }
+
+	    view.setLines(lines);
+	    view.setStations(stations);
 	}
 	}
 	
