@@ -104,17 +104,17 @@ public class Main {
         tm.saveTicket(t1); tm.saveTicket(t2); tm.saveTicket(t3);
         tm.saveTicket(t4); tm.saveTicket(t5);
  
-        // ── 5. CAP NHAT GIA LAN 1 ─────────────────────────────
-        // Buoc 1: Set gia moi vao FareConfig
-        cfg.setBaseFare(10000);
-        cfg.setFarePerStop(5000);
-        cfg.setFixedPriceDaily(60000);
-        cfg.setFixedPriceMonthly(500000);
-        // Buoc 2: Danh dau era moi SAU khi da set gia xong
-        tm.markPriceEra(String.format(
-            "Sau cap nhat lan 1 (base=%,.0f | perStop=%,.0f | ngay=%,.0f | thang=%,.0f)",
-            cfg.getBaseFare(), cfg.getFarePerStop(),
-            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
+ //        // ── 5. CAP NHAT GIA LAN 1 ─────────────────────────────
+//        // Buoc 1: Set gia moi vao FareConfig
+//        cfg.setBaseFare(2000);
+//        cfg.setFarePerStop(5000);
+//        cfg.setFixedPriceDaily(60000);
+//        cfg.setFixedPriceMonthly(500000);
+//        // Buoc 2: Danh dau era moi SAU khi da set gia xong
+//        tm.markPriceEra(String.format(
+//            "Sau cap nhat lan 1 (base=%,.0f | perStop=%,.0f | ngay=%,.0f | thang=%,.0f)",
+//            cfg.getBaseFare(), cfg.getFarePerStop(),
+//            cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
  
         // ── 6. Phat hanh ve SAU cap nhat gia ──────────────────
         tm.issueTicket(p1, TicketType.SINGLE,  3);
