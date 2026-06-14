@@ -127,7 +127,14 @@ public class PassengerController implements IController {
             view.showBuyResult("Không tìm được lộ trình.");
             return;
         }
-        Ticket ticket = TicketManager.getInstance().issueTicket(passenger,type,stops);
+        Ticket ticket;
+        if (type == TicketType.SINGLE) {
+            String ticketId = "TICKET-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            ticket = new SingleTrip(ticketId, passenger, stops, to);
+            TicketManager.getInstance().saveTicket(ticket);
+        } else {
+            ticket = TicketManager.getInstance().issueTicket(passenger, type, stops);
+        }
         if (ticket == null) {
             view.showBuyResult("Mua vé thất bại.");
             return;
