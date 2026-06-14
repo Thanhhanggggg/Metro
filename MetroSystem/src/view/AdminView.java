@@ -565,6 +565,25 @@ public class AdminView extends JPanel {
 		table.setSelectionBackground(new Color(190, 210, 255));
 		table.setGridColor(new Color(210, 215, 225));
 		table.setShowGrid(true);
+		
+		DefaultTableCellRenderer headerRenderer = new DefaultTableCellRenderer() {
+		@Override
+	public Component getTableCellRendererComponent(
+		JTable t, Object value, boolean isSelected,
+		boolean hasFocus, int row, int col) {
+		super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
+		setBackground(BLUE);
+		setForeground(WHITE);
+		setFont(new Font("Arial", Font.BOLD, 12));
+		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, BLUE_LIGHT));
+		setHorizontalAlignment(SwingConstants.LEFT);
+		return this;
+		        }
+		    };
+
+		   for (int i = 0; i < table.getColumnCount(); i++) {
+		      table.getColumnModel().getColumn(i).setHeaderRenderer(headerRenderer);
+		    }
 	}
 
 	private JLabel styledLabel(String text) {
