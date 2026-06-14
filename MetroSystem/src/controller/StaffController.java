@@ -4,6 +4,8 @@ import java.util.List;
 import Metro.*;
 import Metro.StationStaff;
 import view.*;
+import Metro.MetroEventBus.Event;
+import Metro.StationStaff;
 
 public class StaffController implements IController {
 
@@ -151,6 +153,7 @@ public class StaffController implements IController {
         System.out.println("So ve bi anh huong: " + affected.size());
 
         view.showFaultLogged(gateId, true, description);
+        MetroEventBus.getInstance().publish(Event.GATE_FAULT, gateId);
     }
  // UC13b — Kích hoạt lại cổng sau khi sửa xong
     private void handleEnableGate(String gateId) {
@@ -169,6 +172,7 @@ public class StaffController implements IController {
         }
         gate.enableGate();
         view.showGateEnabled(gateId, true);
+        MetroEventBus.getInstance().publish(Event.GATE_ENABLED, gateId);
     }
 
     //Ham ho tro
