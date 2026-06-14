@@ -23,9 +23,39 @@ public class StaffController implements IController {
     public void setView(StaffView view) {
         this.view = view;
         HeatmapService.getInstance().attach(view);
+        replayAlertHistory(); 
+        simulateRealtime();   
     }
 
+    private void replayAlertHistory() {
+        List<HeatmapAlert> history = HeatmapService.getInstance().getAlertHistory();
+        System.out.println("[DEBUG] replay size = " + history.size());
+        if (history == null || history.isEmpty()) return;
 
+        // Doi 500ms de dam bao view da duoc add vao JFrame
+        new javax.swing.Timer(500, e -> {
+            for (HeatmapAlert alert : history) {
+                view.showAlert(alert);
+            }
+            ((javax.swing.Timer) e.getSource()).stop();
+        }).start();
+    }
+    
+    private void simulateRealtime() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                for (Metro.MetroLine line : main.Main.METRO_LINES) {
+                    for (Metro.Station s : line.getStations()) {
+                        if (s.getCheckInCount() > 0) {
+                            HeatmapService.getInstance().analyzeRealtime(s);
+                            Thread.sleep(800);
+                        }
+                    }
+                }
+            } catch (InterruptedException ignored) {}
+        }).start();
+    }
     @Override
     public void handleAction(String action, Object... params) {
         switch (action) {
