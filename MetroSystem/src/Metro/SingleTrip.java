@@ -22,6 +22,13 @@ public class SingleTrip extends Ticket {
         this.price = calcPrice(TicketType.SINGLE);
         this.expiredAt = LocalDateTime.now().plusHours(2);
     }
+    public SingleTrip(String ticketId, Passenger passenger, int stops, Station destination) {
+        this(ticketId, passenger, stops);
+        this.destination = destination;
+    }
+    public Station getDestination() {
+        return destination;
+    }
     @Override
     public boolean isValid() {
         return !isExpired() && getState().isValid();
@@ -32,8 +39,5 @@ public class SingleTrip extends Ticket {
     }
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiredAt);
-    }
-    public LocalDateTime getExpiredAt() {
-        return expiredAt;
     }
 }
