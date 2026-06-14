@@ -3,6 +3,8 @@ package controller;
 import Metro.*;
 import view.AdminView;
 import java.util.*;
+import Metro.MetroEventBus;
+import Metro.MetroEventBus.Event;
 
 public class AdminController implements IController {
 
@@ -10,8 +12,9 @@ public class AdminController implements IController {
 	private AdminView view;
 
 	// Du lieu tuyen / ga luu trong bo nho (demo)
-	private final List<MetroLine> metroLines = new ArrayList<>();
-
+//	private final List<MetroLine> metroLines = new ArrayList<>();
+	// FIX
+	private List<MetroLine> metroLines = new ArrayList<>();
 	public AdminController(Admin admin, AdminView view) {
 		this.admin = admin;
 		this.view = view;
@@ -20,12 +23,13 @@ public class AdminController implements IController {
 	public AdminController(Admin admin, AdminView view, List<MetroLine> sharedLines) {
 	    this.admin = admin;
 	    this.view = view;
-	    for (MetroLine line : sharedLines) {
-	        this.metroLines.add(line);
+	    this.metroLines = sharedLines;
+//	    for (MetroLine line : sharedLines) {
+//	        this.metroLines.add(line);
 	        // Không cần gọi admin.registerLine() vì Main đã quản lý
 	    }
 	    // KHÔNG gọi seedData() ở đây
-	}
+//	}
 	public AdminController() {
 		// TODO Auto-generated constructor stub
 		this.admin = new Admin("A001", "Trần Văn Lâm", "12345678");
@@ -114,6 +118,7 @@ public class AdminController implements IController {
 		admin.registerLine(newLine);
 		view.loadLines(metroLines);
 		view.showInfo("Da them tuyen: " + name);
+		MetroEventBus.getInstance().publish(Event.LINE_ADDED, newLine);
 	}
 
 	// Cap nhat tuyen
@@ -125,8 +130,8 @@ public class AdminController implements IController {
 		admin.updateLine(line, validate(newName) ? newName : null, status);
 		view.loadLines(metroLines);
 		view.showInfo("Cap nhat tuyen thanh cong.");
+		MetroEventBus.getInstance().publish(Event.LINE_UPDATED, line);
 	}
-
 	// Xoa tuyen
 	private void handleRemoveLine(MetroLine line) {
 		if (line == null) {
@@ -139,11 +144,11 @@ public class AdminController implements IController {
 			view.loadLines(metroLines);
 			view.clearStations();
 			view.showInfo("Da xoa tuyen: " + line.getLineName());
+	        MetroEventBus.getInstance().publish(Event.LINE_REMOVED, line);
 		} else {
 			view.showError("Khong the xoa tuyen nay.");
 		}
 	}
-
 	// Them ga vao tuyen dang chon
 	private void handleAddStation(String name, MetroLine line, int capacity) {
 		if (!validate(name)) {
@@ -168,6 +173,7 @@ public class AdminController implements IController {
 		admin.addStation(name.trim(), line, capacity);
 		view.loadStations(line.getStations(), line);
 		view.showInfo("Da them ga: " + name);
+	    MetroEventBus.getInstance().publish(Event.STATION_ADDED, line);
 	}
 
 	// Cap nhat ga (ten + suc chua)
@@ -191,6 +197,7 @@ public class AdminController implements IController {
 		if (ownerLine != null)
 			view.loadStations(ownerLine.getStations(), ownerLine);
 		view.showInfo("Cap nhat ga thanh cong.");
+      MetroEventBus.getInstance().publish(Event.STATION_UPDATED, ownerLine); 
 	}
 
 	// Xoa ga
@@ -207,10 +214,12 @@ public class AdminController implements IController {
 		if (ok) {
 			view.loadStations(line.getStations(), line);
 			view.showInfo("Da xoa ga: " + station.getStationName());
+	 MetroEventBus.getInstance().publish(Event.STATION_REMOVED, line);
 		} else {
 			view.showError("Khong the xoa ga nay.");
 		}
 	}
+
 
 	// Cau hinh gia ve
 	private void handleSetFare(double base, double perStop, double daily, double monthly) {
@@ -242,7 +251,9 @@ public class AdminController implements IController {
 	            "Cap nhat gia thanh cong!\n" + "  Co ban    : %,.0f VND\n" + "  Moi tram  : %,.0f VND\n"
 	                    + "  Ve ngay   : %,.0f VND\n" + "  Ve thang  : %,.0f VND",
 	            cfg.getBaseFare(), cfg.getFarePerStop(), cfg.getFixedPriceDaily(), cfg.getFixedPriceMonthly()));
+	    MetroEventBus.getInstance().publish(Event.FARE_UPDATED, null);
 	}
+	
 	// Cap nhat bang chiet khau
 	private void handleUpdateDiscounts(Map<PassengerType, Double> map) {
 		if (map == null || map.isEmpty()) {
@@ -252,6 +263,7 @@ public class AdminController implements IController {
 		try {
 			admin.updateDiscounts(map);
 			view.showInfo("Cap nhat chiet khau thanh cong.");
+			MetroEventBus.getInstance().publish(Event.DISCOUNT_UPDATED, null);
 		} catch (IllegalArgumentException e) {
 			view.showError("He so chiet khau khong hop le (0.0 - 1.0).");
 		}
