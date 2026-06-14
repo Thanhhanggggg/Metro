@@ -32,6 +32,7 @@ public class StaffController implements IController {
             case "CHECK_TICKET" -> handleCheckTicket((String) params[0]);
             case "REFUND"       -> handleRefund((String) params[0]);
             case "FAULT"        -> handleFault((String) params[0], (String) params[1]);
+            case "ENABLE_GATE"   -> handleEnableGate((String) params[0]); // 
             default             -> view.showError("Hành động không hợp lệ: " + action);
         }
     }
@@ -106,14 +107,38 @@ public class StaffController implements IController {
             return;
         }
 
-        // Tạo SmartGate tạm để gọi reportFault
-        SmartGate gate = new SmartGate(gateId, GateType.IN);
+        // lấy cổng thật từ Registry
+        SmartGate gate = GateRegistry.getInstance().findById(gateId);
+        if (gate == null) {
+            view.showFaultLogged(gateId, false, "Không tìm thấy cổng trong hệ thống");
+            return;
+        }
         gate.reportFault(description);
+        FaultLog log = new FaultLog("F-" + gateId, gateId, description);
+        log.saveLog();
 
         List<Ticket> affected = TicketManager.getInstance().findAffectedTickets(gateId);
         System.out.println("So ve bi anh huong: " + affected.size());
 
         view.showFaultLogged(gateId, true, description);
+    }
+ // UC13b — Kích hoạt lại cổng sau khi sửa xong
+    private void handleEnableGate(String gateId) {
+        if (!validate(gateId)) {
+            view.showError("Vui lòng nhập mã cổng!");
+            return;
+        }
+        SmartGate gate = GateRegistry.getInstance().findById(gateId);
+        if (gate == null) {
+            view.showGateEnabled(gateId, false);
+            return;
+        }
+        if (gate.isActive()) {
+            view.showError("Cổng [" + gateId + "] đang hoạt động bình thường!");
+            return;
+        }
+        gate.enableGate();
+        view.showGateEnabled(gateId, true);
     }
 
     //Ham ho tro

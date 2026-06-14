@@ -157,7 +157,7 @@ public class LoginView {
                 PassengerController ctrl = new PassengerController();
                 view.setController(ctrl);
                 ctrl.setView(view);
-                ctrl.loadInitialData();
+//                ctrl.loadInitialData();
                 return view;
             }
 

@@ -9,6 +9,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
 
 public class SmartGateView extends JPanel {
@@ -27,7 +28,7 @@ public class SmartGateView extends JPanel {
     private static final Color C_MUTED   = new Color(110, 120, 150);
 
     // ─── MVC ─────────────────────────────────────────────────
-    private final SmartGateController ctrl = new SmartGateController();
+    private final SmartGateController ctrl;
 
     // ─── Shared widgets ──────────────────────────────────────
     private JLabel   lblStatus;
@@ -53,6 +54,8 @@ public class SmartGateView extends JPanel {
 
     // ─────────────────────────────────────────────────────────
     public SmartGateView() {
+    	ctrl = new SmartGateController();
+        ctrl.init();
     	setLayout(new BorderLayout());
     	add(buildBody(),      BorderLayout.CENTER);
     	add(buildStatusBar(), BorderLayout.SOUTH);
@@ -104,7 +107,7 @@ public class SmartGateView extends JPanel {
 
     private void refreshGates() {
         pnlGates.removeAll();
-        List<SmartGate> gates = ctrl.getGates();
+        Collection<SmartGate> gates = ctrl.getGates();
         for (SmartGate g : gates) {
             pnlGates.add(gateCard(g));
             pnlGates.add(Box.createRigidArea(new Dimension(0, 6)));
@@ -121,26 +124,31 @@ public class SmartGateView extends JPanel {
 
     private JPanel gateCard(SmartGate gate) {
         String gid = gate.getGateId();
-        int num = 0;
-        try { num = Integer.parseInt(gid.replaceAll("[^0-9]", "")); } catch (Exception ignored){}
-        String typeStr = (num <= 2) ? "VÀO (IN)" : "RA (OUT)";
-        Color typeColor = (num <= 2) ? C_SUCCESS : C_PRIMARY;
+        boolean isActive = gate.isActive(); // ✅ đọc trạng thái thật
+
+        // Xác định loại cổng từ GateType thay vì đoán từ số
+        String typeStr  = (gate.getType() == GateType.IN) ? "VÀO (IN)" : "RA (OUT)";
+        Color typeColor = (gate.getType() == GateType.IN) ? C_SUCCESS : C_PRIMARY;
 
         JPanel card = new JPanel(new GridLayout(3, 1, 0, 1));
-        card.setBackground(C_WHITE);
+        card.setBackground(isActive ? C_WHITE : new Color(255, 235, 235)); // nền đỏ nhạt khi lỗi
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
         card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(C_BORDER, 1, true),
+                new LineBorder(isActive ? C_BORDER : C_DANGER, 1, true),
                 new EmptyBorder(6, 10, 6, 10)));
 
         JLabel id = new JLabel(gid);
-        id.setFont(new Font("Segoe UI", Font.BOLD, 13)); id.setForeground(C_TEXT);
+        id.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        id.setForeground(C_TEXT);
 
         JLabel type = new JLabel("Loại: " + typeStr);
-        type.setFont(new Font("Segoe UI", Font.PLAIN, 11)); type.setForeground(typeColor);
+        type.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        type.setForeground(typeColor);
 
-        JLabel status = new JLabel("● Hoạt động");
-        status.setFont(new Font("Segoe UI", Font.BOLD, 11)); status.setForeground(C_SUCCESS);
+        // ✅ Hiển thị đúng trạng thái
+        JLabel status = new JLabel(isActive ? "● Hoạt động" : "● Đã vô hiệu hóa");
+        status.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        status.setForeground(isActive ? C_SUCCESS : C_DANGER);
 
         card.add(id); card.add(type); card.add(status);
         return card;
@@ -266,7 +274,10 @@ public class SmartGateView extends JPanel {
         p.add(scroll(taLog), gbc(0,1,2,1,1,1, GridBagConstraints.BOTH));
 
         JButton clear = btn("Xóa nhật ký", C_WARNING);
-        clear.addActionListener(e -> { taLog.setText(""); ctrl.getScanLog().clear(); });
+        clear.addActionListener(e -> {
+            taLog.setText("");
+            ctrl.clearLog(); //gọi qua controller
+        });
         p.add(clear, gbc(0,2,2,1,0,0, GridBagConstraints.NONE));
         return p;
     }

@@ -14,7 +14,6 @@ public class SmartGateController implements IController {
     public static final String ACTION_GET_SCAN_LOG   = "GET_SCAN_LOG";
 
     // ── State ─────────────────────────────────────────────────────────────────
-    private final List<SmartGate> gates   = new ArrayList<>();
     private final List<String>    scanLog = new ArrayList<>();
 
     /** Kết quả của lần gọi handleAction() gần nhất – dùng để UI lấy về. */
@@ -22,13 +21,27 @@ public class SmartGateController implements IController {
 
     // ─────────────────────────────────────────────────────────────────────────
     public SmartGateController() {
-        gates.add(new SmartGate("G001", GateType.IN));
-        gates.add(new SmartGate("G002", GateType.IN));
-        gates.add(new SmartGate("G003", GateType.OUT));
-        gates.add(new SmartGate("G004", GateType.OUT));
+    }
+    public void init() {
+        addGate("G001", GateType.IN);
+        addGate("G002", GateType.IN);
+        addGate("G003", GateType.OUT);
+        addGate("G004", GateType.OUT);
+    }
+    public String addGate(String gateId, GateType type) {
+        if (GateRegistry.getInstance().exists(gateId))
+            return "FAIL:Cổng " + gateId + " đã tồn tại!";
+        GateRegistry.getInstance().register(new SmartGate(gateId, type));
+        return "OK:Đã thêm cổng " + gateId;
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    public String removeGate(String gateId) {
+        boolean removed = GateRegistry.getInstance().remove(gateId);
+        return removed ? "OK:Đã xóa cổng " + gateId
+                       : "FAIL:Không tìm thấy cổng " + gateId;
+    }
+
+	// ═══════════════════════════════════════════════════════════════════════
     //  IController – handleAction
     //  Dispatch mọi hành động qua một điểm duy nhất.
     //
@@ -97,7 +110,7 @@ public class SmartGateController implements IController {
 
         // Kiểm tra SmartGate object
         if (input instanceof SmartGate gate) {
-            return gates.stream().anyMatch(g -> g.getGateId().equals(gate.getGateId()));
+            return GateRegistry.getInstance().exists(gate.getGateId());
         }
 
         // Kiểm tra ticketId (String)
@@ -219,18 +232,22 @@ public class SmartGateController implements IController {
     /** Kết quả của handleAction() gần nhất. */
     public String getLastResult()        { return lastResult; }
 
-    public List<SmartGate> getGates()    { return gates; }
-    public List<String>    getScanLog()  { return scanLog; }
-    public String[] getGateIds() {
-        return gates.stream().map(SmartGate::getGateId).toArray(String[]::new);
+    public Collection<SmartGate> getGates() {
+        return GateRegistry.getInstance().getAll();
     }
-
+    public String[] getGateIds() {
+        return GateRegistry.getInstance().getAll()
+            .stream().map(SmartGate::getGateId).toArray(String[]::new);
+    }
     private SmartGate findGateById(String id) {
-        return gates.stream().filter(g -> g.getGateId().equals(id)).findFirst().orElse(null);
+    	return GateRegistry.getInstance().findById(id);
     }
 
     /** Kiểm tra params đủ số lượng tối thiểu. */
     private boolean hasParams(Object[] params, int min) {
         return params != null && params.length >= min && params[0] != null;
+    }
+    public void clearLog() {
+        scanLog.clear();
     }
 }

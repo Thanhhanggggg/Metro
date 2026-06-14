@@ -161,7 +161,21 @@ public class StaffView extends JPanel implements Observer {
                     txtGateId.getText().trim(),
                     txtFaultDesc.getText().trim());
         });
-
+     // ── Kích hoạt lại cổng ──────────────────────────── ← THÊM VÀO ĐÂY
+        JTextField txtEnableGateId = styledTextField();
+        JButton btnEnableGate = styledButton("Kích hoạt lại cổng");
+        btnEnableGate.setOpaque(true);
+        btnEnableGate.setBorderPainted(false);
+        btnEnableGate.setBackground(new Color(0, 120, 60));
+        btnEnableGate.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnEnableGate.setBackground(new Color(0, 160, 80)); }
+            public void mouseExited (MouseEvent e) { btnEnableGate.setBackground(new Color(0, 120, 60)); }
+        });
+        btnEnableGate.addActionListener(e -> {
+            if (controller != null)
+                controller.handleAction("ENABLE_GATE", txtEnableGateId.getText().trim());
+        });
+        
         formPanel.add(styledLabel("Mã cổng (Gate ID):"));
         formPanel.add(Box.createVerticalStrut(6));
         formPanel.add(txtGateId);
@@ -171,8 +185,15 @@ public class StaffView extends JPanel implements Observer {
         formPanel.add(txtFaultDesc);
         formPanel.add(Box.createVerticalStrut(10));
         formPanel.add(btnReportFault);
+        formPanel.add(Box.createVerticalStrut(12)); // 
+        formPanel.add(styledLabel("Kích hoạt lại cổng (Gate ID):")); // 
+        formPanel.add(Box.createVerticalStrut(6));  // 
+        formPanel.add(txtEnableGateId);             // 
+        formPanel.add(Box.createVerticalStrut(8));  // 
+        formPanel.add(btnEnableGate);               // 
         formPanel.add(Box.createVerticalStrut(8));
         formPanel.add(lblFaultResult);
+        
 
         faultTableModel = new DefaultTableModel(FAULT_COLS, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
@@ -197,7 +218,7 @@ public class StaffView extends JPanel implements Observer {
         historyPanel.add(new JScrollPane(faultTable), BorderLayout.CENTER);
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formPanel, historyPanel);
-        split.setDividerLocation(240);
+        split.setDividerLocation(290);
         split.setResizeWeight(0.45);
         split.setBorder(null);
         return split;
@@ -214,6 +235,8 @@ public class StaffView extends JPanel implements Observer {
         JLabel lbl = styledLabel("Cảnh báo lưu lượng hành khách:");
         lbl.setFont(new Font("Arial", Font.BOLD, 13));
         btnAckSelected = styledButton("Xác nhận đã xử lý");
+        btnAckSelected.setOpaque(true);         // 
+        btnAckSelected.setBorderPainted(false); // 
         btnAckSelected.setBackground(new Color(0, 120, 60));
         btnAckSelected.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnAckSelected.setBackground(new Color(0, 160, 80)); }
@@ -434,6 +457,9 @@ public class StaffView extends JPanel implements Observer {
         btn.setBackground(BLUE);
         btn.setForeground(WHITE);
         btn.setFocusPainted(false);
+        btn.setOpaque(true);          // 
+        btn.setBorderPainted(false);  //
+        btn.setContentAreaFilled(true); // 
         btn.setBorder(new EmptyBorder(8, 20, 8, 20));
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -443,4 +469,17 @@ public class StaffView extends JPanel implements Observer {
         });
         return btn;
     }
+
+	public void showGateEnabled(String gateId, boolean success) {
+		// TODO Auto-generated method stub
+		SwingUtilities.invokeLater(() -> {
+	        if (success) {
+	            lblFaultResult.setForeground(GREEN);
+	            lblFaultResult.setText("Cổng [" + gateId + "] đã được kích hoạt lại.");
+	        } else {
+	            lblFaultResult.setForeground(Color.RED);
+	            lblFaultResult.setText("Không tìm thấy cổng [" + gateId + "].");
+	        }
+	    });
+	}
 }

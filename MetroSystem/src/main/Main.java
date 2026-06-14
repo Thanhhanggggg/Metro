@@ -136,8 +136,11 @@ public class Main {
             LocalDate.of(2004, 1, 1),  true,  false));
         vs.registerCitizen(new CitizenInfo("ID003", "Le Van C",
             LocalDate.of(1958, 5, 10), false, false));
+     // ── 9. Khởi tạo cổng SmartGate ────────────────────────
+        controller.SmartGateController gateCtrl = new controller.SmartGateController();
+        gateCtrl.init();
 
-        // ── 7. In tóm tắt ra console ───────────────────────────
+        // ── 10. In tóm tắt ra console ───────────────────────────
         System.out.println("╔══════════════════════════════════════════════╗");
         System.out.println("║   METRO SYSTEM – Khởi tạo dữ liệu mẫu       ║");
         System.out.println("╠══════════════════════════════════════════════╣");
@@ -155,5 +158,6 @@ public class Main {
         System.out.println("  T004      → ExpiredState  (không dùng được)");
         System.out.println("  T005      → RefundedState (không dùng được)");
         System.out.println();
+     
     }
 }

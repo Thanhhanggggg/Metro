@@ -222,11 +222,11 @@ public class PassengerController implements IController {
 	public void setView(PassengerView view) {
 		this.view = view;
 	}
-	public void loadInitialData() {
-	    this.passenger = main.Main.passenger;
-	    view.setLines(main.Main.lines);
-	    view.setStations(main.Main.stations);
-	}
+//	public void loadInitialData() {
+//	    this.passenger = main.Main.passenger;
+//	    view.setLines(main.Main.lines);
+//	    view.setStations(main.Main.stations);
+//	}
 	}
 	
     
