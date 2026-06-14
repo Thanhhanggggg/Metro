@@ -1,6 +1,8 @@
 package controller;
 
 import java.util.ArrayList;
+import Metro.MetroEventBus;
+import Metro.MetroEventBus.Event;
 import java.util.List;
 
 import Metro.*;
@@ -10,11 +12,12 @@ public class PassengerController implements IController {
 
     private Passenger passenger;
     private PassengerView view;
+    private boolean listenersRegistered = false;
 
     public PassengerController(Passenger passenger, PassengerView view) {
         this.passenger = passenger;
         this.view = view;
-    }
+          }
     public PassengerController() {
 		// TODO Auto-generated constructor stub
 	}
@@ -76,6 +79,10 @@ public class PassengerController implements IController {
          view.showRouteResult("Không tìm thấy tuyến.");
          return;
      }
+     if (!main.Main.METRO_LINES.contains(line)) {
+         view.showRouteResult("Tuyến metro này đã bị xóa. Vui lòng chọn lại ga.");
+         return;
+     }
      List<Station> route = line.findRoute(from,to);
      if(route == null) {
          view.showRouteResult("Không tìm thấy lộ trình.");
@@ -109,6 +116,10 @@ public class PassengerController implements IController {
         MetroLine line = from.getMetroLine();
         if (line == null) {
             view.showBuyResult("Không tìm thấy tuyến metro.");
+            return;
+        }
+        if (!main.Main.METRO_LINES.contains(line)) {
+            view.showBuyResult("Tuyến metro này đã bị xóa. Vui lòng chọn lại ga.");
             return;
         }
         int stops = line.getStopCount(from, to);
@@ -151,6 +162,10 @@ public class PassengerController implements IController {
 
         if(line == null) {
             view.showFareResult("Không tìm thấy tuyến");
+            return;
+        }
+        if (!main.Main.METRO_LINES.contains(line)) {
+            view.showFareResult("Tuyến metro này đã bị xóa. Vui lòng chọn lại ga.");
             return;
         }
         double fare = line.listFare(from,to,type);
@@ -228,8 +243,27 @@ public class PassengerController implements IController {
     }
 	public void setView(PassengerView view) {
 		this.view = view;
+		 registerBusListeners();
 	}
+	 private void registerBusListeners() {
+	    	if (listenersRegistered) return;         
+	        listenersRegistered = true;
+	        
+	        MetroEventBus bus = MetroEventBus.getInstance();
+	        bus.subscribe(Event.LINE_ADDED,     payload -> loadInitialData());
+	        bus.subscribe(Event.LINE_UPDATED,   payload -> loadInitialData());
+	        bus.subscribe(Event.LINE_REMOVED,   payload -> loadInitialData());
+	        bus.subscribe(Event.STATION_ADDED,  payload -> loadInitialData());
+	        bus.subscribe(Event.STATION_UPDATED,payload -> loadInitialData());
+	        bus.subscribe(Event.STATION_REMOVED,payload -> loadInitialData());
+	        // Fare changes don't require a UI reload — FareConfig singleton is already live.
+	        // But you can show a notification if you want:
+	        bus.subscribe(Event.FARE_UPDATED,   payload -> {
+	            if (view != null) view.showFareResult("Lưu ý: Bảng giá vé vừa được cập nhật.");
+	        });
+	    }
 	public void loadInitialData() {
+		if (view == null) return; 
 	    List<MetroLine> lines = main.Main.METRO_LINES;
 
 	    // Gom tất cả ga từ các tuyến
