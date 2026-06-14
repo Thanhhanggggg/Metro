@@ -155,10 +155,10 @@ public class LoginView {
         case "PASSENGER": {
             PassengerView view = new PassengerView();
             
-            Passenger passenger = main.Main.PASSENGERS.get(0); // ← ADD THIS
+            Passenger passenger = main.Main.PASSENGERS.get(0); // đang lấy p1, muốn hành khách khác tăng số phần get
             
             PassengerController ctrl = new PassengerController();
-            ctrl.setPassenger(passenger); // ← ADD THIS
+            ctrl.setPassenger(passenger); 
             ctrl.setView(view);
             view.setController(ctrl);
             ctrl.loadInitialData();
