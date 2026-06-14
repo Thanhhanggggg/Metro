@@ -1,6 +1,8 @@
 package controller;
 
 import Metro.*;
+import Metro.MetroEventBus.Event;
+
 import java.util.*;
 
 
@@ -21,6 +23,17 @@ public class SmartGateController implements IController {
 
     // ─────────────────────────────────────────────────────────────────────────
     public SmartGateController() {
+    	 MetroEventBus bus = MetroEventBus.getInstance();
+    	 bus.subscribe(Event.GATE_FAULT,   payload -> onGateFault((String) payload));
+    	 bus.subscribe(Event.GATE_ENABLED, payload -> onGateEnabled((String) payload));
+    }
+    private void onGateFault(String gateId) {
+        // GateRegistry already updated by StaffController; just log if needed.
+        System.out.println("[SmartGateController] Fault reported on: " + gateId);
+    }
+
+    private void onGateEnabled(String gateId) {
+        System.out.println("[SmartGateController] Gate re-enabled: " + gateId);
     }
     public void init() {
         addGate("G001", GateType.IN);
