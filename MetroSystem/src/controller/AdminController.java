@@ -24,12 +24,9 @@ public class AdminController implements IController {
 	    this.admin = admin;
 	    this.view = view;
 	    this.metroLines = sharedLines;
-//	    for (MetroLine line : sharedLines) {
-//	        this.metroLines.add(line);
-	        // Không cần gọi admin.registerLine() vì Main đã quản lý
-	    }
-	    // KHÔNG gọi seedData() ở đây
-//	}
+	    // Không gọi seedData() vì Main đã quản lý dữ liệu
+	}
+
 	public AdminController() {
 		// TODO Auto-generated constructor stub
 		this.admin = new Admin("A001", "Trần Văn Lâm", "12345678");
