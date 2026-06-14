@@ -86,7 +86,7 @@ public class StaffView extends JPanel implements Observer {
         tabbedPane.setBackground(BG);
         tabbedPane.addTab("Kiểm tra vé",   buildTabCheckTicket());
         tabbedPane.addTab("Hoàn vé",        buildTabRefund());
-        tabbedPane.addTab("Báo cáo sự cố",  buildTabFault());
+        tabbedPane.addTab("Xử lý sự cố",  buildTabFault());
         tabbedPane.addTab("Thông báo",       buildTabAlerts());
         add(tabbedPane, BorderLayout.CENTER);
     }
