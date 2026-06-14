@@ -63,12 +63,33 @@ public class AdminView extends JPanel {
 	// =========================================================
 	public AdminView() {
 		buildUI();
+		// Lắng nghe check-in/check-out từ SmartGate → tự cập nhật cột "Hien tai"
+		MetroEventBus.getInstance().subscribe(MetroEventBus.Event.CHECKIN_UPDATED, payload -> {
+			if (!(payload instanceof Station changedStation)) return;
+			SwingUtilities.invokeLater(() -> {
+				boolean isRelevant = selectedLine.getStations().stream()
+			            .anyMatch(s -> s.getStationId().equals(changedStation.getStationId()));
+				// Chỉ refresh khi ga vừa thay đổi thuộc tuyến đang xem
+				if (selectedLine != null && selectedLine.getStations().contains(changedStation)) {
+					loadStations(selectedLine.getStations(), selectedLine);
+				}
+			});
+		});
 	}
 
 	public void setController(IController ctrl) {
 		this.controller = ctrl;
-		if (ctrl != null)
+		if (ctrl != null) {
 			ctrl.handleAction("LOAD_LINES");
+			// Tự chọn tuyến đầu tiên và load ga ngay khi mở Admin
+			SwingUtilities.invokeLater(() -> {
+				if (ctrl instanceof controller.AdminController ac && !ac.getMetroLines().isEmpty()) {
+					selectedLine = ac.getMetroLines().get(0);
+					lineTable.setRowSelectionInterval(0, 0);
+					loadStations(selectedLine.getStations(), selectedLine);
+				}
+			});
+		}
 	}
 
 	// =========================================================
@@ -88,6 +109,12 @@ public class AdminView extends JPanel {
 		tabbedPane.addTab("Quan ly Tuyen & Ga", buildTabLineStation());
 		tabbedPane.addTab("Cau hinh Gia ve", buildTabFare());
 		tabbedPane.addTab("Bao cao", buildTabReport());
+		// Khi switch về tab "Quan ly Tuyen & Ga" → refresh bảng ga luôn
+		tabbedPane.addChangeListener(e -> {
+			if (tabbedPane.getSelectedIndex() == 0 && selectedLine != null) {
+				loadStations(selectedLine.getStations(), selectedLine);
+			}
+		});
 		add(tabbedPane, BorderLayout.CENTER);
 	}
 
