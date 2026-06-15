@@ -133,7 +133,7 @@ public class FareConfig {
 	    if (stops == 1) {
 	        rawFare = baseFare; // Đi 1 ga lấy giá cơ bản
 	    } else {
-	        rawFare = baseFare+(stops * farePerStop); // Đi nhiều hơn thì tính theo giá mỗi trạm
+	        rawFare = baseFare+((stops -1 )* farePerStop); // Đi nhiều hơn thì tính theo giá mỗi trạm
 	    }
 	    
 	    // Giới hạn giá tối đa không vượt quá maxFare
