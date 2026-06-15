@@ -563,16 +563,16 @@ public class AdminView extends JPanel {
 	            }
 	        }
 
-	        // Phan 2: Lich su canh bao (nhu cu)
-	        sb.append("\n===== LICH SU CANH BAO =====\n\n");
-	        if (report == null || report.isEmpty()) {
-	            sb.append("Chua co canh bao nao.\n");
-	        } else {
-	            for (HeatmapAlert a : report)
-	                sb.append(a.toString()).append("\n");
-	            sb.append("\nTong canh bao: ").append(report.size());
-	        }
-
+//	        // Phan 2: Lich su canh bao (nhu cu)
+//	        sb.append("\n===== LICH SU CANH BAO =====\n\n");
+//	        if (report == null || report.isEmpty()) {
+//	            sb.append("Chua co canh bao nao.\n");
+//	        } else {
+//	            for (HeatmapAlert a : report)
+//	                sb.append(a.toString()).append("\n");
+//	            sb.append("\nTong canh bao: ").append(report.size());
+//	        }
+//
 	        taReport.setText(sb.toString());
 	    });
 	}
