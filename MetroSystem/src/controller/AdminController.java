@@ -13,6 +13,7 @@ public class AdminController implements IController {
 
 	// Du lieu tuyen / ga luu trong bo nho (demo)
 //	private final List<MetroLine> metroLines = new ArrayList<>();
+	// FIX
 	private List<MetroLine> metroLines = new ArrayList<>();
 	public AdminController(Admin admin, AdminView view) {
 		this.admin = admin;
@@ -196,7 +197,11 @@ public class AdminController implements IController {
 	    }
 
 	    station.setStationName(newName.trim());
-	    station.setCapacity(newCapacity);
+    station.setCapacity(newCapacity);
+    // Re-analyze heatmap vi ty le occupancy thay doi khi suc chua thay doi
+    if (station.getCheckInCount() > 0) {
+        HeatmapService.getInstance().analyzeRealtime(station);
+    }
 	    // Refresh hien thi
 	    MetroLine ownerLine = findLineOf(station);
 	    if (ownerLine != null)
