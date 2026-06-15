@@ -246,7 +246,7 @@ public class SmartGateView extends JPanel {
             if (ticketId.isEmpty()) { warn("Vui lòng nhập mã vé!"); return; }
             String res  = ctrl.validateTicket(gateId, ticketId);
             String info = ctrl.getTicketInfo(ticketId);
-            showResult(taVal, res + (info.isEmpty() ? "" : "\n\n─────────────\n" + info));
+            showResult(taVal, res + (info.isEmpty() ? "" : "\n------------------------------------------\n" + info));
             log(res); txtValTicket.setText("");
         });
         p.add(b, gbc(1,3,1,1,0,0, GridBagConstraints.NONE));
@@ -296,12 +296,7 @@ public class SmartGateView extends JPanel {
         lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         lblStatus.setForeground(C_TEXT);
 
-//        JLabel ver = new JLabel("SmartGate System v1.0  |  UC07 · UC08 · UC09 · UC13");
-//        ver.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-//        ver.setForeground(C_MUTED);
-
         bar.add(lblStatus, BorderLayout.WEST);
- //       bar.add(ver, BorderLayout.EAST);
         return bar;
     }
 

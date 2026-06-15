@@ -8,7 +8,7 @@ import java.util.*;
 
 public class SmartGateController implements IController {
 
-    // ── Hằng action ──────────────────────────────────────────────────────────
+    // ── action ──────────────────────────────────────────────────────────
     public static final String ACTION_CHECK_IN       = "CHECK_IN";
     public static final String ACTION_CHECK_OUT      = "CHECK_OUT";
     public static final String ACTION_VALIDATE       = "VALIDATE";
@@ -234,7 +234,7 @@ public class SmartGateController implements IController {
         }
 
         String msg = "OK:Check-in thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName();
+                   + " → " + ticket.getState().getClass().getSimpleName() + buildTicketInfo(ticket);
         scanLog.add("[CHECK-IN] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -280,7 +280,7 @@ public class SmartGateController implements IController {
             MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, st.getDestination());
         }
         String msg = "OK:Check-out thành công! Vé " + ticketId
-                   + " → " + ticket.getState().getClass().getSimpleName();
+                   + " → " + ticket.getState().getClass().getSimpleName() + buildTicketInfo(ticket);
         scanLog.add("[CHECK-OUT] " + msg.replace("OK:", ""));
         return msg;
     }
@@ -346,5 +346,28 @@ public class SmartGateController implements IController {
         return GateRegistry.getInstance().getAll().stream()
             .filter(g -> g.getType() == type && g.isActive() && g.getStation() != null)
             .findFirst().orElse(null);
+    }
+    private String buildTicketInfo(Ticket ticket) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n---------------------------------\n");
+        sb.append("Loại vé    : ").append(ticket.getType()).append("\n");
+        sb.append("Trạng thái : ").append(ticket.getState().getDescription()).append("\n");
+
+        if (ticket instanceof DayPass dp) {
+            boolean stillToday = java.time.LocalDate.now().equals(dp.getValidDate());
+            sb.append("Hiệu lực   : Hôm nay (").append(java.time.LocalDate.now()).append(")")
+              .append(stillToday ? " Còn hiệu lực" : " Hết hạn");
+
+        } else if (ticket instanceof MonthlyPass mp) {
+            boolean notExpired = java.time.LocalDate.now().isBefore(mp.getValidUntil());
+            sb.append("Hết hạn    : ").append(mp.getValidUntil()).append("\n");
+            sb.append("Còn hiệu lực: ").append(notExpired ? "Có" : "Không");
+
+        } else if (ticket instanceof SingleTrip) {
+            TicketState st = ticket.getState();
+            String trangThai = (st instanceof ExpiredState) ? "Đã sử dụng" : "Còn hiệu lực";
+            sb.append("Còn hiệu lực: ").append(trangThai);
+        }
+        return sb.toString();
     }
 }
