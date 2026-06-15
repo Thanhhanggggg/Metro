@@ -224,13 +224,19 @@ public class SmartGateController implements IController {
 
         ticket.checkIn();
 
-        // Cập nhật số hành khách tại ga → Admin thấy cột "Hiện tại" tăng
+        // Tăng ga xuất phát → Admin thấy cột "Hiện tại" tăng
         SmartGate inGate = findActiveGateByType(GateType.IN);
         if (inGate != null && inGate.getStation() != null) {
             Station station = inGate.getStation();
             station.incrementCheckIn();
             HeatmapService.getInstance().analyzeRealtime(station);
             MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, station);
+        }
+        // Tăng ga đích
+        if (ticket instanceof SingleTrip st && st.getDestination() != null) {
+            st.getDestination().incrementCheckIn();
+            HeatmapService.getInstance().analyzeRealtime(st.getDestination());
+            MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, st.getDestination());
         }
 
         String msg = "OK:Check-in thành công! Vé " + ticketId
@@ -273,9 +279,9 @@ public class SmartGateController implements IController {
             HeatmapService.getInstance().analyzeRealtime(inGate.getStation());
             MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, inGate.getStation());
         }
-        // Tăng ga đích
+        // Giảm ga đích
         if (ticket instanceof SingleTrip st && st.getDestination() != null) {
-            st.getDestination().incrementCheckIn();
+            st.getDestination().decrementCheckIn();
             HeatmapService.getInstance().analyzeRealtime(st.getDestination());
             MetroEventBus.getInstance().publish(Event.CHECKIN_UPDATED, st.getDestination());
         }
