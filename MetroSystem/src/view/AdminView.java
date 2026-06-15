@@ -546,19 +546,35 @@ public class AdminView extends JPanel {
 		});
 	}
 
-	public void showHeatmapReport(List<HeatmapAlert> report) {
-		SwingUtilities.invokeLater(() -> {
-			if (report == null || report.isEmpty()) {
-				taReport.setText("Chua co canh bao HeatMap nao.");
-				return;
-			}
-			StringBuilder sb = new StringBuilder();
-			sb.append("===== BAO CAO HEATMAP =====\n\n");
-			for (HeatmapAlert a : report)
-				sb.append(a.toString()).append("\n");
-			sb.append("\nTong canh bao: ").append(report.size());
-			taReport.setText(sb.toString());
-		});
+	// AdminView.java
+	public void showHeatmapReport(List<HeatmapAlert> report, List<MetroLine> lines) {
+	    SwingUtilities.invokeLater(() -> {
+	        StringBuilder sb = new StringBuilder();
+
+	        // Phan 1: Trang thai hien tai cua tat ca ga (tinh truc tiep tu du lieu live)
+	        sb.append("===== TRANG THAI HIEN TAI CAC GA =====\n\n");
+	        for (MetroLine line : lines) {
+	            for (Station s : line.getStations()) {
+	                double rate = s.getOccupancyRate();
+	                AlertLevel level = AlertLevel.fromRate(rate);
+	                sb.append(String.format("Ga: %-15s | %d/%d | %3.0f%% | %s\n",
+	                        s.getStationName(), s.getCheckInCount(), s.getCapacity(),
+	                        rate * 100, level));
+	            }
+	        }
+
+	        // Phan 2: Lich su canh bao (nhu cu)
+	        sb.append("\n===== LICH SU CANH BAO =====\n\n");
+	        if (report == null || report.isEmpty()) {
+	            sb.append("Chua co canh bao nao.\n");
+	        } else {
+	            for (HeatmapAlert a : report)
+	                sb.append(a.toString()).append("\n");
+	            sb.append("\nTong canh bao: ").append(report.size());
+	        }
+
+	        taReport.setText(sb.toString());
+	    });
 	}
 
 	public void showError(String msg) {
