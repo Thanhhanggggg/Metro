@@ -4,7 +4,6 @@ public class UsedState implements TicketState{
 
 	@Override
 	public void handle(Ticket ticket) {
-		// TODO Auto-generated method stub
 		ticket.onCheckOut();
 	}
 

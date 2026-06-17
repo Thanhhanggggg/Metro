@@ -80,7 +80,7 @@ public abstract class Ticket {
             return;
         }
         if (state instanceof UsedState) {
-            System.out.println("Vé đang trong hành trình, vui lòng check-out trước!");
+            System.out.println("Vé đã check-in, vui lòng check-out trước!");
             return;
         }
         if (state instanceof ActiveState) {

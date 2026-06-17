@@ -14,16 +14,18 @@ public class DayPass extends Ticket {
         this.price =
                 calcPrice(TicketType.DAILY);
     }
-    @Override
-    public boolean isValid() {
-        return LocalDate.now().equals(validDate) && getState().isValid();
-    }
+    
     @Override
     public double calcPrice(TicketType type) {
         return FareConfig.getInstance().getFixedPriceDaily();
     }
     public void incrementRide() {
         ridesUsed++;
+    }
+    @Override
+    public boolean isValid() {
+        return LocalDate.now().equals(validDate) 
+        		&& getState().isValid();
     }
     public void onCheckOut() {
         incrementRide();
