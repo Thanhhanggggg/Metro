@@ -96,6 +96,7 @@ public abstract class Ticket {
             System.out.println("Ticket not in journey!");
         }
     }
+    public abstract void onCheckOut();
     // Strategy Pattern
     public boolean canRefund() {
         if(state == null || refundPolicy == null) {
@@ -130,9 +131,5 @@ public abstract class Ticket {
     public String toString() {
         return "Ticket [id=" + ticketId+ ", type="+ type+ ", status="+ status+ ", price="+ price+ "]";
     }
-    public void onCheckOut() {
-        setState(new ExpiredState());
-        setStatus(TicketStatus.EXPIRED);
-        System.out.println("Ticket expired after check-out.");
-    }
+    
 }
