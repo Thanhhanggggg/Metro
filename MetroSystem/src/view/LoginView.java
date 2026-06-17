@@ -114,7 +114,7 @@ public class LoginView {
         JPanel footer = new JPanel();
         footer.setBackground(new Color(220, 228, 245));
         footer.setBorder(new EmptyBorder(8, 0, 8, 0));
-        JLabel fLbl = new JLabel("Nhóm 5 – OOP Project 2025");
+        JLabel fLbl = new JLabel("Nhóm 5 – OOP Project");
         fLbl.setFont(new Font("Arial", Font.PLAIN, 11));
         fLbl.setForeground(new Color(100, 100, 130));
         footer.add(fLbl);
