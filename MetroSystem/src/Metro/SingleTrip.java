@@ -42,7 +42,6 @@ public class SingleTrip extends Ticket {
     }
 	@Override
 	public void onCheckOut() {
-		// TODO Auto-generated method stub
 		setState(new ExpiredState());
         setStatus(TicketStatus.EXPIRED);
         System.out.println("Ticket expired after check-out.");
